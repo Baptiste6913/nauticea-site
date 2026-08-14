@@ -62,20 +62,6 @@ export default async function DetailActualite({ params }: Props) {
           className="mt-6 h-auto w-full rounded-lg"
         />
       ))}
-      {actu.videos.map((v) => (
-        <video
-          key={v}
-          src={v}
-          controls
-          preload="none"
-          className="mt-6 w-full rounded-lg bg-marine"
-        >
-          <p>
-            Votre navigateur ne lit pas cette vidéo.{" "}
-            <a href={v}>La télécharger</a>.
-          </p>
-        </video>
-      ))}
     </article>
   );
 }

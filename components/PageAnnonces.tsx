@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Boat } from "@/lib/types";
 import BoatList from "@/components/BoatList";
+import { getBoats } from "@/lib/sources/corpus";
 
 const CATEGORIES = [
   { slug: "", label: "Toutes" },
@@ -8,6 +9,15 @@ const CATEGORIES = [
   { slug: "voiliers", label: "Voiliers" },
   { slug: "catamaran", label: "Catamaran" },
 ] as const;
+
+// Les catégories sans stock sont masquées de la navigation ; elles
+// réapparaissent d'elles-mêmes si le jeu de données en contient à nouveau.
+// Les routes restent servies (cibles des redirections 301), avec état vide.
+function categoriesDisponibles(): Set<string> {
+  const presentes = new Set(getBoats().map((b) => b.categorie as string));
+  presentes.add("");
+  return presentes;
+}
 
 export default function PageAnnonces({
   titre,
@@ -30,7 +40,9 @@ export default function PageAnnonces({
       {intro && <p className="mt-3 max-w-3xl leading-relaxed text-encre/80">{intro}</p>}
       <nav aria-label="Catégories de bateaux" className="mt-6">
         <ul className="flex flex-wrap gap-2">
-          {CATEGORIES.map((c) => {
+          {CATEGORIES.filter(
+            (c) => categoriesDisponibles().has(c.slug) || c.slug === categorieActive
+          ).map((c) => {
             const href = c.slug ? `/annonces/${c.slug}` : "/annonces";
             const actif = c.slug === categorieActive;
             return (

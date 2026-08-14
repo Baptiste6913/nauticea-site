@@ -252,6 +252,14 @@ def main():
             redirects.append((b["ancienne_url"], "/annonces/" + b["slug"]))
     for a in actus:
         redirects.append((a["ancienne_url"], "/actualites/" + a["slug"]))
+    # Annonces dépubliées mais encore liées sur le site actuel (pages mortes
+    # détectées à l'inventaire) : redirigées vers la liste pour éviter des 404.
+    for mort in [
+        "/annonces-bateaux-occasion/29-vedette/522-f42.html",
+        "/annonces-bateaux-occasion/29-vedette/524-excellence-38.html",
+        "/annonces-bateaux-occasion/29-vedette/527-v53.html",
+    ]:
+        redirects.append((mort, "/annonces"))
     with open(os.path.join(OUT, "redirects.csv"), "w", encoding="utf-8") as fh:
         fh.write("source,destination\n")
         for s, dst in redirects:
@@ -288,6 +296,18 @@ def main():
         fh.write("CHAMPS MANQUANTS FLAGUÉS (%d) :\n" % len(manquants))
         for mq in manquants:
             fh.write("  - %s\n" % mq)
+        fh.write(
+            "\nNOTES COMPLÉMENTAIRES :\n"
+            "  - 3 liens morts sur le site actuel (522-f42, 524-excellence-38,\n"
+            "    527-v53, liés depuis stock-neuf mais dépubliés) : exclus de\n"
+            "    l'inventaire, redirigés en 301 vers /annonces.\n"
+            "  - Vidéos des actualités : exclues de la v1 (décision Baptiste,\n"
+            "    2026-08-14) ; on ne référence jamais l'ancien site. Les URLs\n"
+            "    restent dans actualites.json à titre documentaire.\n"
+            "  - Dates des actualités absentes du HTML public : a_confirmer.\n"
+            "  - Écart directive : corpus construit depuis le site live\n"
+            "    (2026-08-14), miroir local inaccessible depuis la session.\n"
+        )
 
     print(open(os.path.join(OUT, "RAPPORT.txt"), encoding="utf-8").read())
 

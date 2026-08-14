@@ -194,24 +194,32 @@ via `lib/format.ts` (`typoFr`, `formatPrix` sur `Intl fr-FR`), guillemets
 commentaires (vérifié par grep sur `app/`, `components/`, `lib/`,
 `scripts/`, `tests/`, `README.md`, `.github/`).
 
-## Questions ouvertes (aucune bloquante)
+## Questions ouvertes : arbitrées par Baptiste le 2026-08-14
 
-1. Vidéos des actualités (S430 825 Mo, C335 95 Mo, S390 48 Mo) :
-   référencées en URL absolue vers l'ancien site ; à héberger ailleurs
-   (YouTube, Vercel Blob) avant l'extinction du site Joomla.
-2. Adresse email publique : absente du corpus ; à renseigner via
-   `NEXT_PUBLIC_CONTACT_EMAIL` (et `CONTACT_TO_EMAIL` pour le
-   formulaire) pour activer mailto et envoi Resend.
-3. Dates des 4 actualités : absentes du HTML public (`a_confirmer`),
-   non affichées.
-4. 3 annonces dépubliées mais encore liées sur le site actuel
-   (522-f42, 524-excellence-38, 527-v53) : exclues de la refonte ;
-   aucune redirection créée pour ces URLs.
-5. Description AdsManager brute : certaines annonces contiennent
-   « Catégorie -1 » ou des listes dupliquées dans la description
-   (déjà le cas sur le site actuel) ; conservé tel quel, aucun
-   nettoyage silencieux.
-6. Champ voiliers : aucune annonce voilier dans le corpus au 2026-08-14 ;
-   la page `/annonces/voiliers` affiche un état vide propre.
-7. `/carte` : page cible du QR livrée ; le QR imprimé doit pointer vers
-   `https://www.nauticeayachting.fr/carte` une fois le domaine basculé.
+Décisions appliquées et vérifiées sur build local :
+
+1. **Vidéos des actualités** : exclues de la v1, texte conservé. Aucune
+   référence vers l'ancien site (en fin de vie, possiblement compromis) :
+   `corpus.ts` vide le champ `videos`, la page actualité ne rend plus de
+   balise `<video>` (vérifié : 0 occurrence). Les URLs restent dans
+   `actualites.json` à titre documentaire.
+2. **Email public** : `contact@nauticeayachting.fr` confirmé (whois +
+   usage réel). Renseigné dans `.env.example` comme valeur documentée
+   pour `NEXT_PUBLIC_CONTACT_EMAIL` et `CONTACT_TO_EMAIL` ; à reporter
+   dans les variables d'environnement Vercel au deploy.
+3. **Dates des actualités** : on vit sans (`a_confirmer`, non affichées).
+4. **3 annonces dépubliées** (522-f42, 524-excellence-38, 527-v53) :
+   exclusion confirmée ; leurs URLs, encore liées sur le site actuel,
+   sont désormais redirigées en 301 vers `/annonces` (vérifié sur les
+   3). Total : 48 redirections dans `redirects.csv`.
+5. **« Catégorie -1 »** : nettoyage d'artefacts techniques AdsManager
+   par motif connu autorisé ; appliqué au chargement dans `corpus.ts`
+   (`nettoyerDescription`), le corpus brut reste fidèle. Les 28
+   descriptions sont nettoyées (vérifié : 0 occurrence en page).
+6. **Zéro voilier** : cohérent avec le stock Sealine/RYCK. Les
+   catégories sans stock sont masquées de la navigation et
+   réapparaissent d'elles-mêmes si le jeu de données en contient ; les
+   routes restent servies avec état vide (cibles des 301).
+
+Reste une note pratique : le QR des cartes imprimées doit pointer vers
+`https://www.nauticeayachting.fr/carte` une fois le domaine basculé.
