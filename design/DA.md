@@ -8,9 +8,11 @@ shader d'eau 32/50, lignes de coque 33/50).
 
 ## Concept
 
-Le site est construit comme la carte marine de la rade de Nauticea :
-la passe de Port-Fréjus, ses fonds, ses sondes. Les photos réelles du
-stock (632 images, premier atout du site) flottent en surface ; ce qui
+Le site est construit comme une carte marine dessinée pour Nauticea :
+des fonds, des courbes de sonde, l'univers du métier. Le tracé est
+stylisé et déterministe, sans prétention de relevé : c'est un langage
+graphique, pas une carte réelle. Les photos réelles du stock
+(632 images, premier atout du site) flottent en surface ; ce qui
 structure la page vit en dessous, en relief bathymétrique : les
 isobathes dessinent la profondeur des sections, les chiffres en police
 d'instrument portent les données (prix, longueurs, années), la lumière
@@ -46,8 +48,10 @@ pour la flottaison des prix.
   Lettrage large de signalétique portuaire et d'immatriculation de
   coque ; continuité avec l'existant (déjà Archivo), on pousse l'axe de
   largeur au lieu de changer de famille.
-- **Corps : Open Sans, 400 et 600.** Déjà en place, lisible, neutre :
-  le corps ne concurrence jamais les photos.
+- **Corps : Fira Sans, 400 et 600.** Humaniste de la lignée FF Meta :
+  même registre et même lisibilité qu'Open Sans qu'elle remplace
+  (retouche GO session B), dessin plus incarné, jamais en concurrence
+  avec les photos.
 - **Utilitaire specs et prix : IBM Plex Mono, 400 à 600.** Chiffres
   d'instruments et de sondes de carte marine, tabulaires par nature :
   prix, longueurs, années, tableaux de caractéristiques.
@@ -118,12 +122,15 @@ Motif secondaire discret (le seul autorisé) : les **chiffres de sonde**
 en Plex Mono posés sur les champs d'isobathes du hero et du pied de
 page, avec parcimonie et `aria-hidden`.
 
-Honnêteté de la donnée : en session A le champ est un tracé stylisé
-déterministe qui évoque la rade, pas un relevé bathymétrique ; les
-chiffres de sonde sont décoratifs et ne prétendent à aucune mesure.
-L'extraction du trait réel (EMODnet ou SHOM, licence à vérifier) est
-une question ouverte pour la session B ; sans source licenciée, le
-tracé reste stylisé et le dit.
+Statut de la donnée (arbitré au GO session B, question fermée) : le
+tracé stylisé déterministe est définitif, aucune extraction SHOM ou
+EMODnet. Les chiffres de sonde sont une suite décorative arbitraire :
+jamais présentés ni rattachés à des profondeurs réelles, aucune
+référence à Fréjus ni à une carte réelle dans leur emploi.
+
+Hiérarchie de retrait (arbitrée au GO session B) : si un écran est
+chargé, la ligne de flottaison sable saute avant le registre sondes.
+Un accessoire en moins, jamais deux de plus.
 
 ## Hero de l'accueil
 

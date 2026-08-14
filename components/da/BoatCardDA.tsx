@@ -52,9 +52,13 @@ export default function BoatCardDA({ boat }: { boat: Boat }) {
             <p className="mt-1 text-xs uppercase tracking-wide text-encre/70">
               {typoFr(boat.sous_categorie.replace("-", " "))}
               {boat.specs["Année"] ? ` · ${boat.specs["Année"]}` : ""}
-              {boat.specs["Longueur (m)"]
-                ? ` · ${boat.specs["Longueur (m)"].replace(".", ",")} m`
-                : ""}
+              {boat.specs["Longueur (m)"] ? (
+                <span className="normal-case">
+                  {` · ${boat.specs["Longueur (m)"].replace(".", ",")} m`}
+                </span>
+              ) : (
+                ""
+              )}
             </p>
             <p className="sonde mt-2 text-lg font-semibold text-encre">
               {formatPrix(boat.prix, boat.devise)}

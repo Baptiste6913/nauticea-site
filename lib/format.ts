@@ -24,3 +24,11 @@ export function formatPrix(prix: number | null, devise = "EUR"): string {
 export function formatLongueur(metres: string): string {
   return `${metres.replace(".", ",")}${FINE}m`;
 }
+
+// Valeur de caractéristique : virgule décimale française pour les
+// nombres, texte inchangé sinon.
+export function formatValeurSpec(valeur: string): string {
+  return /^\d+\.\d+$/.test(valeur.trim())
+    ? valeur.trim().replace(".", ",")
+    : valeur;
+}

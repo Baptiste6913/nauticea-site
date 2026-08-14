@@ -38,7 +38,8 @@ export default function Isobathes({
     variante === "fond" ? 40 : 24
   );
   const alea = mulberry32(graine + 7);
-  // Sondes décoratives (tracé stylisé, aucune mesure revendiquée).
+  // Sondes : suite décorative arbitraire, jamais rattachée à des
+  // profondeurs réelles ni à une carte réelle (design/DA.md).
   const chiffres = sondes
     ? [2, 5, 9, 14, 21, 31].map((valeur) => ({
         valeur,

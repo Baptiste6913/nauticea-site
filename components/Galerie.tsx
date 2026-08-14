@@ -50,7 +50,7 @@ export default function Galerie({
             >
               ›
             </button>
-            <p className="absolute bottom-2 right-2 rounded bg-marine/70 px-2 py-0.5 text-xs text-white">
+            <p className="sonde absolute bottom-2 right-2 rounded bg-marine/70 px-2 py-0.5 text-xs text-white">
               {index + 1} / {photos.length}
             </p>
           </>

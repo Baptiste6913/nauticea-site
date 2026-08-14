@@ -7,7 +7,7 @@ import Reveal from "@/components/da/Reveal";
 import Surface from "@/components/da/Surface";
 import { getBoatBySlug, getBoats } from "@/lib/sources/corpus";
 import { SITE } from "@/lib/site";
-import { formatPrix, typoFr } from "@/lib/format";
+import { formatPrix, formatValeurSpec, typoFr } from "@/lib/format";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -147,7 +147,7 @@ export default async function DetailAnnonce({ params }: Props) {
                     {typoFr(cle)}
                   </th>
                   <td className="sonde py-2 text-right font-medium text-azur-2">
-                    {typoFr(valeur)}
+                    {typoFr(formatValeurSpec(valeur))}
                   </td>
                 </tr>
               ))}

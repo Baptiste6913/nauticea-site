@@ -1,13 +1,16 @@
 import type { Metadata } from "next";
-import { Archivo, IBM_Plex_Mono, Open_Sans } from "next/font/google";
+import { Archivo, Fira_Sans, IBM_Plex_Mono } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
-const corps = Open_Sans({
+// Corps humaniste (retouche GO session B) : Fira Sans, lignée FF Meta,
+// même registre et même lisibilité qu'Open Sans, dessin plus incarné.
+const corps = Fira_Sans({
   variable: "--font-corps",
   subsets: ["latin"],
+  weight: ["400", "600"],
   display: "swap",
 });
 
