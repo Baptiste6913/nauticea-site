@@ -139,7 +139,7 @@ concernées ; aucune photo n'est perdue, aucun contenu ne change.
 
 | Élément | Déclencheur | Durée / easing | Reduced-motion et Save-Data |
 |---|---|---|---|
-| Relief 3D du hero | après `load` + `requestIdleCallback`, import dynamique client only | dérive continue lente (période ~30 s), 30 fps plafonnés, pause hors viewport et onglet caché | SVG statique identique, la scène n'est jamais téléchargée |
+| Relief 3D du hero | après `load` + `requestIdleCallback`, import dynamique client only, pointeur fin et >= 768 px seulement (mesure : la scène coûtait 17 points de Lighthouse mobile, le budget prime) | dérive continue lente (période ~30 s), 30 fps plafonnés, pause hors viewport et onglet caché | SVG statique identique, la scène n'est jamais téléchargée ; au tactile, même version statique complète |
 | Reveals de section | entrée dans le viewport, une fois, orchestrés par section | translation 12 px + opacité, 500 ms, cubic-bezier(0.22, 1, 0.36, 1), enfants décalés de 60 ms | aucun masquage : tout est visible immédiatement |
 | Tilt des cartes bateau | pointeur fin + hover, desktop seulement | 6° max, lissage rAF, retour 250 ms | désactivé (tactile : désactivé aussi) |
 | Trace isobathe sous les titres | hover et focus-visible de carte | stroke-dashoffset 300 ms ease-out | apparition sans tracé (opacité seule) |

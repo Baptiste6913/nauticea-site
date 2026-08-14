@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Archivo, Open_Sans } from "next/font/google";
+import { Archivo, IBM_Plex_Mono, Open_Sans } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { SITE } from "@/lib/site";
@@ -11,10 +11,20 @@ const corps = Open_Sans({
   display: "swap",
 });
 
+// Display DA : Archivo variable avec l'axe de largeur (wdth 125 posé en
+// CSS), lettrage de signalétique portuaire (design/DA.md).
 const titres = Archivo({
   variable: "--font-titres",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  axes: ["wdth"],
+  display: "swap",
+});
+
+// Utilitaire DA : chiffres d'instruments pour specs et prix.
+const sondes = IBM_Plex_Mono({
+  variable: "--font-sondes",
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
   display: "swap",
 });
 
@@ -40,7 +50,9 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="fr">
-      <body className={`${corps.variable} ${titres.variable} antialiased`}>
+      <body
+        className={`${corps.variable} ${titres.variable} ${sondes.variable} antialiased`}
+      >
         <a
           href="#contenu"
           className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:px-4 focus:py-2"

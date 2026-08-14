@@ -27,6 +27,15 @@ for (const [vue, viewport] of VUES) {
   for (const [nom, chemin] of PAGES) {
     const page = await ctx.newPage();
     await page.goto(LOCAL + chemin, { waitUntil: "networkidle", timeout: 30000 });
+    // Déclenche reveals et images lazy avant la capture pleine page.
+    await page.evaluate(async () => {
+      const pas = window.innerHeight * 0.7;
+      for (let y = 0; y < document.body.scrollHeight; y += pas) {
+        window.scrollTo(0, y);
+        await new Promise((r) => setTimeout(r, 180));
+      }
+      window.scrollTo(0, 0);
+    });
     await page.waitForTimeout(1200);
     await page.screenshot({ path: `${OUT}/${nom}-${vue}.png`, fullPage: true });
     await page.close();
