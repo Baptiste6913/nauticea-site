@@ -14,7 +14,7 @@ export default function Galerie({
 
   if (photos.length === 0) {
     return (
-      <p className="flex aspect-[4/3] items-center justify-center rounded-lg bg-ecume text-encre/60">
+      <p className="flex aspect-[4/3] items-center justify-center rounded-lg bg-ecume text-encre/70">
         Photos sur demande
       </p>
     );

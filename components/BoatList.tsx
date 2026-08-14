@@ -65,12 +65,12 @@ export default function BoatList({
             </select>
           </label>
         )}
-        <p className="ml-auto text-sm text-encre/60">
+        <p className="ml-auto text-sm text-encre/70">
           {visibles.length} annonce{visibles.length > 1 ? "s" : ""}
         </p>
       </div>
       {visibles.length === 0 ? (
-        <p className="mt-10 text-center text-encre/60">
+        <p className="mt-10 text-center text-encre/70">
           Aucune annonce dans cette sélection pour le moment.
         </p>
       ) : (

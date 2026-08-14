@@ -90,7 +90,7 @@ export default function ContactForm({ annonce }: { annonce?: string }) {
           className="mt-1 w-full rounded border border-encre/20 px-3 py-2"
         />
       </div>
-      <p className="text-xs leading-relaxed text-encre/60">
+      <p className="text-xs leading-relaxed text-encre/70">
         Les données qui vous concernent sont confidentielles et seul Nauticea
         Yachting a le droit de les consulter. Vous disposez d&apos;un droit
         d&apos;accès, de modification, de rectification et de suppression des

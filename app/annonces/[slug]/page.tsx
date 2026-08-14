@@ -85,7 +85,7 @@ export default async function DetailAnnonce({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdProduct(boat)) }}
       />
-      <nav aria-label="Fil d'Ariane" className="text-sm text-encre/60">
+      <nav aria-label="Fil d'Ariane" className="text-sm text-encre/70">
         <ol className="flex list-none flex-wrap gap-1 p-0">
           <li><Link href="/" className="hover:text-azur-2 hover:underline">Accueil</Link> /</li>
           <li><Link href="/annonces" className="hover:text-azur-2 hover:underline">Annonces</Link> /</li>

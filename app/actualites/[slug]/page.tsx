@@ -37,7 +37,7 @@ export default async function DetailActualite({ params }: Props) {
 
   return (
     <article className="mx-auto max-w-3xl px-4 py-10">
-      <nav aria-label="Fil d'Ariane" className="text-sm text-encre/60">
+      <nav aria-label="Fil d'Ariane" className="text-sm text-encre/70">
         <ol className="flex list-none flex-wrap gap-1 p-0">
           <li><Link href="/" className="hover:text-azur-2 hover:underline">Accueil</Link> /</li>
           <li><Link href="/actualites" className="hover:text-azur-2 hover:underline">Actualités</Link> /</li>

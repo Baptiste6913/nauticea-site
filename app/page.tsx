@@ -19,12 +19,35 @@ function sectionsAccueil(texte: string): { sealine: string; ryck: string } {
   const iSealine = texte.indexOf("SEALINE exploite");
   const iRyckTitre = texte.indexOf("RYCK YACHTS");
   const iRyck = texte.indexOf("RYCK,", iRyckTitre);
-  const fin = texte.indexOf("Accueil    |");
+  // Le bloc du corpus se termine par les liens du pied de page : on coupe
+  // à la fin de la phrase RYCK (« ...propriétaires. »).
+  const finRyck = texte.indexOf("propriétaires.", iRyck);
   return {
     sealine: texte.slice(iSealine, iRyckTitre).trim(),
-    ryck: texte.slice(iRyck, fin > 0 ? fin : undefined).trim(),
+    ryck:
+      finRyck > 0
+        ? texte.slice(iRyck, finRyck + "propriétaires.".length).trim()
+        : texte.slice(iRyck).trim(),
   };
 }
+
+// Données issues des mentions légales et de la page contact du corpus.
+const JSON_LD_LOCAL_BUSINESS = {
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: SITE.nom,
+  url: SITE.url,
+  image: `${SITE.url}/site/logos/logo-1382603607.png`,
+  telephone: SITE.telephoneFixe,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: SITE.adresse.rue,
+    postalCode: SITE.adresse.codePostal,
+    addressLocality: SITE.adresse.ville,
+    addressCountry: SITE.adresse.pays,
+  },
+  sameAs: [SITE.reseaux.facebook, SITE.reseaux.instagram],
+};
 
 export default function Accueil() {
   const pages = getPages();
@@ -33,6 +56,12 @@ export default function Accueil() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(JSON_LD_LOCAL_BUSINESS),
+        }}
+      />
       <Slider diapos={DIAPOS} />
       <section className="mx-auto max-w-6xl px-4 py-12">
         <h1 className="text-center text-display-l font-bold text-marine md:text-display-xl">

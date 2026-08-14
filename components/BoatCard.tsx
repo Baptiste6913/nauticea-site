@@ -35,7 +35,7 @@ export default function BoatCard({ boat }: { boat: Boat }) {
           <h3 className="text-display-s font-semibold text-marine group-hover:text-azur-2">
             {boat.titre}
           </h3>
-          <p className="mt-1 text-xs uppercase tracking-wide text-encre/60">
+          <p className="mt-1 text-xs uppercase tracking-wide text-encre/70">
             {typoFr(boat.sous_categorie.replace("-", " "))}
             {boat.specs["Année"] ? ` · ${boat.specs["Année"]}` : ""}
             {boat.specs["Longueur (m)"]

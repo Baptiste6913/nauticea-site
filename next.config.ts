@@ -15,7 +15,7 @@ function lireRedirections() {
     .slice(1)
     .map((ligne) => {
       const [source, destination] = ligne.split(",");
-      return { source, destination, permanent: true };
+      return { source, destination, statusCode: 301 };
     })
     .filter((r) => r.source && r.destination && r.source !== r.destination);
 }

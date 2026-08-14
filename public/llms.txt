@@ -1,0 +1,16 @@
+# Nauticea Yachting
+
+Concessionnaire exclusif des marques Sealine et RYCK Yachts à Port Fréjus
+(Côte d'Azur, France). Vente de bateaux moteur neufs et d'occasion,
+service après-vente, hivernage, achat et vente de places de port.
+
+- Adresse : Côté capitainerie, 23 Quai de la Foudre, l'Amirauté, 83600 Fréjus
+- Téléphone : +33 4 94 51 02 22
+
+## Pages principales
+
+- Annonces bateaux : https://www.nauticeayachting.fr/annonces
+- Stock neuf Sealine et RYCK : https://www.nauticeayachting.fr/stock-neuf
+- Occasions : https://www.nauticeayachting.fr/occasions
+- Places de port : https://www.nauticeayachting.fr/places-de-port
+- Contact : https://www.nauticeayachting.fr/contact

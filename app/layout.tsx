@@ -26,6 +26,13 @@ export const metadata: Metadata = {
   },
   description:
     "Concessionnaire Sealine et RYCK Yachts à Port Fréjus. Bateaux moteur neufs et occasions sur la Côte d'Azur : Fréjus, Cannes, Nice, Saint-Raphaël, Saint-Tropez.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: "fr_FR",
+    siteName: "Nauticea Yachting",
+    images: ["/site/slider/sealine-c390-3.jpg"],
+  },
 };
 
 export default function RootLayout({

@@ -1,0 +1,1119 @@
+/*
+ * This is not the stylesheet you are looking for...
+ * This resource is dynamically generated based on the file media/com_foxcontact/css/foxcontact.css
+ * It contains statements necessary for the proper display of the form.
+ * You shouldn't modify it. If you really need it, override css rules on your own css instead.
+ */
+
+/* Hiding the FrontEnd Editing button for FoxContact modules */
+.btn.jmodedit[href*="&id=458&"], /* we precise that after the 458 we want an ampersand, to prevent modules 10, 11, 12... hiding modules 103, 118, 124... */
+.btn.jmodedit[href$="&id=458"] /* Maybe there won't be an ampersand because id is the last argument of HREF. In that case we want &id to be the last string of the HREF */
+{
+	display: none;
+}
+
+/* Fix: A bug affecting both twitter bootstrap 2.1 and Joomla Protostar 1.0 template which is derived from bootstrap */
+.control-group.error input[type="checkbox"], .control-group.error input[type="radio"],
+.control-group.success input[type="checkbox"], .control-group.success input[type="radio"]
+{
+	box-shadow: none !important;
+}
+
+/* Fix: Artisteer templates issues */
+.fox-container .alert ul > li:before
+{
+	content: normal !important; /* Prevent the use of 'content' property to set images beside list elements */
+}
+
+.fox-container .alert ul > li
+{
+	padding: 0 !important; /* Remove the left padding */
+}
+
+.fox-container .alert > a.close
+{
+	text-decoration: none; /* Remove the underline from the "close button" (x) */
+}
+
+/* ----- Reset some general properties found messed in certain templates ----- */
+
+/* Fix templates with a center alignment by default */
+div[id^="fox-container-"] .controls,
+div[id^="fox-container-"] .fox-item.fox-item-board
+{
+	text-align: left;
+}
+
+html[dir="rtl"] div[id^="fox-container-"] .controls,
+html[dir="rtl"] div[id^="fox-container-"] .fox-item.fox-item-board
+{
+	text-align: right;
+}
+
+/* Many templates don't set any font to the form elements.
+	The browser would then fall back to use system fonts.
+	Let's use the page font instead */
+div[id^="fox-container-"] .fox-form input,
+div[id^="fox-container-"] .fox-form select,
+div[id^="fox-container-"] .fox-form textarea,
+div[id^="fox-container-"] .fox-form button
+{
+	font: inherit;
+}
+
+/* RivaThemes. "float: left" on input elements hurts the chosen search input and impacts all the items */
+div.chzn-search input[type=text]
+{
+	float: none;
+}
+
+/* ----- end - reset some general properties ----- */
+
+/* Fix the offset problem with a fixed header or menu bar
+	http://www.fox.ra.it/forum/22-how-to/10643-why-is-there-a-in-the-url-on-thank-you-page.html
+   The height of the offset depends on the height of your menu bar. */
+.fox-container > a
+{
+	display: block;
+	position: relative;
+	top: -120px;
+	visibility: hidden;
+}
+
+/* Form framework */
+/* The control over the width has been moved from the form to the rows to allow separate settings */
+div#fox-container-c458 form .fox-row
+{
+	width: auto;
+	max-width: 100%;
+	/* Do not use overflow: hidden; here. It hides the dropdown menu placed at the bottom of the form */
+	margin: auto; /* Center the form on the page when the form width (px or %) is less than the page width */
+}
+
+/* Hide the board container when there are no messages */
+div[id^="fox-container-"] div.fox-item-board:empty
+{
+	display: none;
+}
+
+/* Handle the case of multiple notifications, eg: Invalid fields + Beta warning + jQuery inclusions warnings */
+div[id^="fox-container-"] div.alert:not(:first-child)
+{
+	margin-top: 8px;
+}
+
+/* Alert boxes */
+div#fox-container-c458 div.alert ul
+{
+	list-style-type: none;
+}
+
+/* Fix: issues with some templates */
+div#fox-container-c458 div.alert li
+{
+	background: none;
+}
+
+/* Mandatory field marker, Invalid value in field */
+div#fox-container-c458 .required,
+div#fox-container-c458 .asterisk
+{
+	color: #b94a48;
+	font-weight: bold;
+	font-size: 1.2em;
+}
+
+div#fox-container-c458 .fox-item-attachments-btn-cnt div,
+div#fox-container-c458 .fox-item-attachments-btn-cnt span
+{
+	display: inline-block;
+}
+
+div#fox-container-c458 .fox-item-attachments span.help-block
+{
+	margin-bottom: 0;
+}
+
+div#fox-container-c458 .required:after,
+div#fox-container-c458 .asterisk:after
+{
+	content: "*";
+}
+
+/* Prevent invalid element fall before others */
+div#fox-container-c458 .asterisk
+{
+	position: absolute;
+}
+
+div#fox-container-c458 label .asterisk
+{
+	position: static;
+}
+
+div#fox-container-c458 .control-group
+{
+	max-width: 100%;
+}
+
+/* Switch labels and fields to the traditional box model */
+div#fox-container-c458 .control-label,
+div#fox-container-c458 input,
+div#fox-container-c458 label.checkbox,
+div#fox-container-c458 textarea,
+div#fox-container-c458 .chzn-container-single .chzn-single
+{
+	box-sizing: border-box;
+}
+
+/* Input boxes and textareas */
+div#fox-container-c458 input[type="text"],
+div#fox-container-c458 input[type="email"],
+div#fox-container-c458 textarea
+{
+	margin: 0; /* Some templates including ProtoStar apply margin-bottom to labels */
+	padding: 4px 5px;
+}
+
+div#fox-container-c458 select,
+div#fox-container-c458 input[type="text"],
+div#fox-container-c458 input[type="email"]
+{
+	height: 28px;
+	line-height: 18px;
+}
+
+div#fox-container-c458 select,
+div#fox-container-c458 textarea,
+div#fox-container-c458 input[type="text"],
+div#fox-container-c458 input[type="email"]
+{
+	max-width: 100%;
+}
+
+/* Upload button */
+div#fox-container-c458 .qq-upload-button-caption
+{
+	/* Fix: An issue with ie7 */
+	vertical-align: top;
+}
+
+div#fox-container-c458 .qq-upload-button-hover
+{
+}
+
+div#fox-container-c458 .qq-upload-button-focus
+{
+	outline: 1px dotted black;
+}
+
+/* Upload list */
+div#fox-container-c458 ul.qq-upload-list
+{
+	padding: 0;
+	margin: 0;
+	list-style: none;
+}
+
+div#fox-container-c458 ul.qq-upload-list > li
+{
+	list-style: none;
+	background: none; /* Fix: Some templates use background as list style */
+	padding: 0; /* In those cases they usually set a left/right padding in addition */
+}
+
+div#fox-container-c458 .qq-upload-list span
+{
+	display: inline-block;
+	white-space: nowrap;
+	padding: 0 20px;
+	background-repeat: no-repeat;
+	background-position: left center;
+	/* Redundant defaults
+	background-color: transparent;
+	background-attachment:scroll; */
+}
+
+html[dir="rtl"] div#fox-container-c458 .qq-upload-list span
+{
+	background-position: right center;
+}
+
+/* Hide Successful and failure messages while uploading  */
+div#fox-container-c458 li span.qq-upload-failed-text,
+div#fox-container-c458 li span.qq-upload-success-text
+{
+	display: none;
+}
+
+/* Display again Success message when upload is successful and vice versa */
+div#fox-container-c458 li.qq-upload-fail span.qq-upload-failed-text,
+div#fox-container-c458 li.qq-upload-success span.qq-upload-success-text
+{
+	display: inline-block;
+}
+
+/* Help text under some fields */
+div#fox-container-c458 span.help-block
+{
+	display: block;
+}
+
+/* Built-in captcha main image */
+div#fox-container-c458 .fox-item-captcha-img
+{
+	box-sizing: border-box;
+	max-width: 100%;
+}
+
+/* Built-in captcha input box */
+div#fox-container-c458 .fox-item-captcha-cnt
+{
+	max-width: 0;
+}
+
+div#fox-container-c458 .fox-item-captcha-cnt div div
+{
+	position: relative;
+	display: inline;
+}
+
+div#fox-container-c458 .fox-item-captcha-cnt div div input
+{
+	display: inline-block;
+}
+
+/* Built-in captcha reload image */
+div#fox-container-c458 img.fox-item-captcha-img-reload
+{
+	cursor: pointer;
+
+	/* https://css-tricks.com/snippets/css/absolute-center-vertical-horizontal-an-image/ */
+	position: absolute;
+	top: 50%;
+	right: -1px;
+	-webkit-transform: translate(-50%, -50%); /* Webkit based (Chrome, Safari, etc.) */
+	-moz-transform: translate(-50%, -50%); /* Firefox */
+	-ms-transform: translate(-50%, -50%); /* IE */
+	-o-transform: translate(-50%, -50%); /* Opera */
+	transform: translate(-50%, -50%);
+}
+
+html[dir="rtl"] div#fox-container-c458 img.fox-item-captcha-img-reload
+{
+	right: auto;
+	left: -1px;
+
+	-webkit-transform: translate(50%, -50%); /* Chrome, Safari, Opera */
+	-ms-transform: translate(50%, -50%); /* IE 9 */
+	-o-transform: translate(50%, -50%);
+	transform: translate(50%, -50%);
+}
+
+/* Submit button */
+div#fox-container-c458 .submit-button
+{
+	margin-right: 32px;
+}
+
+html[dir="rtl"] div#fox-container-c458 .submit-button
+{
+	margin-right: 0;
+	margin-left: 32px;
+}
+
+div#fox-container-c458 .fox-item-submit-centered .reset-button,
+div#fox-container-c458 .fox-item-submit-centered .submit-button,
+html[dir="rtl"] div#fox-container-c458 .fox-item-submit-centered .submit-button
+{
+	margin: 0 16px 8px 16px;
+}
+
+/* Chosen select box customizations. Based on media/jui/chosen.css 0.14.0 bundled with Joomla 3.2.3. */
+
+/* This style prevent a "resize" on chrome from the transition from the select to the choose */
+div#fox-container-c458 .fox-item-dropdown .controls select
+{
+	height: 26px;
+	margin: 0;
+}
+
+/* Customized background sprite */
+div#fox-container-c458 .chzn-container-single .chzn-single div b,
+div#fox-container-c458 .chzn-container-single .chzn-search input[type="text"],
+div#fox-container-c458 .chzn-container-single .chzn-single abbr,
+div#fox-container-c458 .chzn-container-multi .chzn-choices li.search-choice .search-choice-close
+{
+	background-image: url("../../../../../../../../../../media/com_foxcontact/images/ui.png");
+}
+
+div#fox-container-c458 .chzn-container-single .chzn-single div
+{
+	width: 26px;
+}
+
+/* Fix: Joomla implementation of chosen "rtl downward arrow" is partial. The code to move the arrow on the left side is in media/jui/css/bootstrap-rtl.css while it should be in media/jui/css/chosen.css. This way the rtl downward arrow only applies to protostar frontend template, which loads rtl variation of twitter bootstrap. */
+html[dir="rtl"] div#fox-container-c458 .chzn-container-single .chzn-single div
+{
+	right: auto;
+	left: 0;
+}
+
+/* Downward arrow */
+div#fox-container-c458 .chzn-container-single .chzn-single div b
+{
+	background-repeat: no-repeat;
+	background-position: 0 0;
+}
+
+html[dir="rtl"] div#fox-container-c458 .chzn-container-single .chzn-single div b
+{
+	background-position: -2px 1px;
+}
+
+/* Upward arrow */
+div#fox-container-c458 .chzn-container-active.chzn-with-drop .chzn-single div b
+{
+	background-position: -28px 1px;
+}
+
+html[dir="rtl"] div#fox-container-c458 .chzn-container-active.chzn-with-drop .chzn-single div b
+{
+	background-position: -30px 1px;
+}
+
+/* Unselected selector */
+div#fox-container-c458 .chzn-container-single .chzn-single
+{
+	/* Customized vertical gradient */
+	background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, color-stop(20%, #ffffff), color-stop(100%, #eeeeee));
+	background-image: -webkit-linear-gradient(top, #ffffff 20%, #eeeeee 100%);
+	background-image: -moz-linear-gradient(top, #ffffff 20%, #eeeeee 100%);
+	background-image: -o-linear-gradient(top, #ffffff 20%, #eeeeee 100%);
+	background-image: -ms-linear-gradient(top, #ffffff 20%, #eeeeee 100%);
+	background-image: linear-gradient(top, #ffffff 20%, #eeeeee 100%);
+	/* Some templates like beez_20 set font color and background with a high specificity #main a:hover */
+	color: #555555;
+	background-color: #ffffff;
+	width: 100%;
+	padding: 0 5px;
+	/* Set the same height than the input fields*/
+	height: 26px;
+	line-height: 26px;
+}
+
+/* Selected selector */
+div#fox-container-c458 .chzn-container-active.chzn-with-drop .chzn-single
+{
+	/* The same gradient defined in chosen base, but there it doesn't have enough specificity to be applied */
+	background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(20%, #eeeeee), color-stop(80%, #ffffff));
+	background-image: -webkit-linear-gradient(#eeeeee 20%, #ffffff 80%);
+	background-image: -moz-linear-gradient(#eeeeee 20%, #ffffff 80%);
+	background-image: -o-linear-gradient(#eeeeee 20%, #ffffff 80%);
+	background-image: linear-gradient(#eeeeee 20%, #ffffff 80%);
+}
+
+/* Set the same width than the input fields */
+div#fox-container-c458 .chzn-container
+{
+
+	width: 230px; /* [!important] We have to override inline values */
+	max-width: 100%;
+}
+
+div#fox-container-c458 .chzn-container-single .chzn-single
+{
+	max-width: 100%;
+}
+
+/* Search input */
+div#fox-container-c458 .chzn-container-single .chzn-search input[type="text"]
+{
+	background-position: 100% -26px;
+	padding: 4px 20px 4px 5px;
+	width: 100%;
+}
+
+/* Fix: Joomla implementation of chosen doesn't support "rtl search input". It behaves exactly like ltr */
+html[dir="rtl"] div#fox-container-c458 .chzn-container-single .chzn-search input[type="text"]
+{
+	background-position: -48px -26px;
+	padding: 4px 5px 4px 20px;
+}
+
+/* Close button (X) */
+div#fox-container-c458 .chzn-container-single .chzn-single abbr
+{
+	right: 30px;
+	background-repeat: no-repeat;
+	background-position: right top;
+}
+
+div#fox-container-c458 .chzn-container-single .chzn-single abbr:hover
+{
+	background-position: right -11px;
+}
+
+/* Fix: Joomla implementation of chosen "rtl X button" is partial. The code to move the X on the left side is in media/jui/css/bootstrap-rtl.css while it should be in media/jui/css/chosen.css. This way the rtl x button only applies to protostar frontend template, which loads rtl variation of twitter bootstrap. */
+html[dir="rtl"] div#fox-container-c458 .chzn-container-single .chzn-single abbr
+{
+	right: auto;
+	left: 30px;
+}
+
+/* Close button (X) in Multiple Select layout */
+div#fox-container-c458 .chzn-container-multi .chzn-choices li.search-choice .search-choice-close
+{
+	background-repeat: no-repeat;
+	background-position: right top;
+}
+
+div#fox-container-c458 .chzn-container .chzn-results li
+{
+	line-height: 15px;
+	padding: 5px 6px;
+	margin: 0;
+	list-style: none;
+	background: none; /* Fix { Some templates use background as list style } */
+}
+
+div#fox-container-c458 .chzn-container .chzn-results li.highlighted
+{
+	background-color: #3875d7;
+	background-image: -webkit-gradient(linear, 50% 0%, 50% 100%, color-stop(20%, #3875d7), color-stop(90%, #2a62bc));
+	background-image: -webkit-linear-gradient(#3875d7 20%, #2a62bc 90%);
+	background-image: -moz-linear-gradient(#3875d7 20%, #2a62bc 90%);
+	background-image: -o-linear-gradient(#3875d7 20%, #2a62bc 90%);
+	background-image: linear-gradient(#3875d7 20%, #2a62bc 90%);
+}
+
+/* Fixes the mess that the original chosen does, they say for "Retina compatibility" */
+@media only screen and (-webkit-min-device-pixel-ratio: 2), only screen and (min-resolution: 144dpi)
+{
+	div#fox-container-c458 .chzn-rtl .chzn-search input[type="text"],
+	div#fox-container-c458 .chzn-container-single .chzn-single abbr,
+	div#fox-container-c458 .chzn-container-single .chzn-single div b,
+	div#fox-container-c458 .chzn-container-single .chzn-search input[type="text"],
+	div#fox-container-c458 .chzn-container-multi .chzn-choices .search-choice .search-choice-close,
+	div#fox-container-c458 .chzn-container .chzn-results-scroll-down span,
+	div#fox-container-c458 .chzn-container .chzn-results-scroll-up span
+	{
+		background-image: url("../../../../../../../../../../media/com_foxcontact/images/ui@2x.png") !important;
+		background-size: 70px 46px !important;
+	}
+}
+
+div#fox-container-c458 .control-label,
+div#fox-container-c458 .control-label label,
+div#fox-container-c458 .fox-item-attachments .controls label
+{
+	display: inline-block;
+}
+
+div#fox-container-c458 .fox-label-inside-no-placeholder
+{
+	display: inline-block;
+}
+
+div#fox-container-c458 .fox-form-inline .control-group,
+div#fox-container-c458 .fox-form-inline .control-group .control-label,
+div#fox-container-c458 .fox-form-inline .control-group .controls,
+div#fox-container-c458 .fox-form-inline .control-group label.checkbox,
+div#fox-container-c458 .fox-form-stacked .control-group label.checkbox
+{
+	display: inline-block;
+}
+
+div#fox-container-c458 .fox-form-inline .control-group label.checkbox:not(:last-child)
+{
+	margin-right: 16px;
+}
+
+html[dir="rtl"] div#fox-container-c458 .fox-form-inline .control-group label.checkbox:not(:last-child)
+{
+	margin-right: 0;
+	margin-left: 16px;
+}
+
+div#fox-container-c458 input[type="radio"],
+div#fox-container-c458 input[type="checkbox"]
+{
+	margin: 3px 0 0;
+	line-height: normal;
+	cursor: pointer;
+}
+
+div#fox-container-c458 .fox-form-inline input[type="radio"],
+div#fox-container-c458 .fox-form-inline input[type="checkbox"]
+{
+	margin: 0;
+}
+
+div#fox-container-c458 textarea
+{
+	width: 230px;
+	resize: none;
+}
+
+div#fox-container-c458 input[type="text"],
+div#fox-container-c458 input[type="email"],
+div#fox-container-c458 select, /* Standard select used as fallback under some circumstances */
+div#fox-container-c458 .fox-form-stacked .fox-item-radio .controls,
+div#fox-container-c458 .fox-form-stacked .fox-item-submit .controls,
+div#fox-container-c458 .fox-form-stacked .fox-item-captcha .controls,
+div#fox-container-c458 .fox-form-stacked .fox-item-checkbox .controls,
+div#fox-container-c458 .fox-form-stacked .fox-item-newsletter .controls,
+div#fox-container-c458 .fox-form-stacked .fox-item-attachments .controls,
+div#fox-container-c458 .fox-form-stacked .fox-item-html-fields .controls,
+div#fox-container-c458 .fox-form-stacked .fox-item-board-fields .controls,
+div#fox-container-c458 .fox-form-stacked .fox-item-checkbox-group .controls,
+/* Todo: wildcard */
+div#fox-container-c458 .fox-form-stacked .fox-item-acceptance .controls
+{
+	width: 230px;
+}
+
+div#fox-container-c458 .fox-item-submit.fox-item-submit-labels .control-label,
+div#fox-container-c458 .fox-item-submit.fox-item-submit-centered .control-label
+{
+	display: none;
+}
+
+div#fox-container-c458 .fox-form-inline .fox-item-submit.fox-item-submit-centered .controls,
+div#fox-container-c458 .fox-form-stacked .fox-item-submit.fox-item-submit-centered .controls
+{
+	text-align: center;
+}
+
+div#fox-container-c458 .fox-form-stacked .fox-item-submit.fox-item-submit-centered .controls
+{
+	width: 100%;
+}
+
+div#fox-container-c458 .fox-item-attachments-upload-lst .controls
+{
+	width: 100%;
+}
+
+/* form elements based on form type */
+div#fox-container-c458 .fox-form-stacked .control-group
+{
+	/* can't use overflow:hidden; due to "Chosen" dropdown select boxes. Fallback to float:left alternative, but it needs width:100% */
+	float: left;
+	width: 100%;
+}
+
+html[dir="rtl"] div#fox-container-c458 .fox-form-stacked .control-group
+{
+	float: right;
+}
+
+/* Field labels */
+div#fox-container-c458 .control-label
+{
+	max-width: 100%;
+	margin: 0; /* Some templates including ProtoStar apply margin-bottom to labels */
+}
+
+div#fox-container-c458 .fox-item-html .control-label
+{
+	line-height: normal;
+}
+
+div#fox-container-c458 .fox-item-html p:last-child
+{
+	margin-bottom: 0;
+}
+
+/* Collapse the height of the spacer labels to avoid the annoying vertical space
+	Text
+	|________|
+	....
+	[] Checkbox */
+div#fox-container-c458 .control-label.collapsed
+{
+	height: 1px;
+	margin: 0;
+	padding: 0;
+}
+
+div#fox-container-c458 .fox-form-stacked .control-label
+{
+	float: left;
+	width: 230px;
+	text-align: left;
+	padding-right: 16px;
+}
+
+html[dir="rtl"] div#fox-container-c458 .fox-form-stacked .control-label
+{
+	float: right;
+	text-align: right;
+	padding-right: 0;
+	padding-left: 16px;
+}
+
+div#fox-container-c458 .fox-form-inline .control-label
+{
+	padding-right: 0.4em;
+}
+
+html[dir="rtl"] div#fox-container-c458 .fox-form-inline .control-label
+{
+	padding-left: 0.4em;
+}
+
+/* Fields container */
+div#fox-container-c458 .fox-form-stacked .controls
+{
+	float: left;
+}
+
+html[dir="rtl"] div#fox-container-c458 .fox-form-stacked .controls
+{
+	float: right;
+}
+
+/* Checkbox and radio center alignment and text indentation */
+div#fox-container-c458 .radio,
+div#fox-container-c458 .checkbox
+{
+	min-height: 20px;
+	padding-left: 20px;
+	max-width: 100%;
+}
+
+html[dir="rtl"] div#fox-container-c458 .radio,
+html[dir="rtl"] div#fox-container-c458 .checkbox
+{
+	padding-left: 0;
+	padding-right: 20px;
+}
+
+div#fox-container-c458 .radio input[type="radio"],
+div#fox-container-c458 .checkbox input[type="checkbox"]
+{
+	float: left;
+	margin-left: -20px;
+}
+
+html[dir="rtl"] div#fox-container-c458 .radio input[type="radio"],
+html[dir="rtl"] div#fox-container-c458 .checkbox input[type="checkbox"]
+{
+	float: right;
+	margin-right: -20px;
+}
+
+div#fox-container-c458 .controls
+{
+	/* Removes the 180px left margin set by bootstrap */
+	margin: 0;
+	/* Fix: dropdown collapse with layout extended in the module, but hurts the view of the component */
+	/* width: 100%; */
+	max-width: 100%;
+}
+
+/**/
+
+/**/
+
+/* Icons inside Submit and Reset buttons */
+div#fox-container-c458 button span
+{
+	/*
+	 Fix an issue with the icons on Microsoft Edge and RTL language: icon shown on the wrong side
+	 Todo: Font icons will make this fix not necessary
+	 */
+	display: inline-block;
+}
+
+div#fox-container-c458 button span.with-icon
+{
+	background: no-repeat left center;
+	padding: 0 0 0 20px;
+}
+
+html[dir="rtl"] div#fox-container-c458 button span.with-icon
+{
+	/* firefox doesn't use correctly "background-position-x" property so just redefine the entire "background-position" */
+	background-position: right center;
+	padding: 0 20px 0 0;
+}
+
+div#fox-container-c458 input.fox-item-calendar-input
+{
+	cursor: pointer;
+	/* Prevent selection in order to avoid backspace which would take the page back */
+	-moz-user-select: -moz-none;
+	-webkit-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+div#fox-container-c458 div.fox-item-radio label input[type="radio"],
+div#fox-container-c458 div.fox-item-checkbox-group label input[type="checkbox"]
+{
+	margin-top: 0;
+	margin-right: 7px;
+}
+
+html[dir="rtl"] div#fox-container-c458 div.fox-item-radio label input[type="radio"],
+html[dir="rtl"] div#fox-container-c458 div.fox-item-checkbox-group label input[type="checkbox"]
+{
+	margin-right: 0;
+	margin-left: 7px;
+}
+
+div#fox-container-c458 div.fox-item-radio div.fox-item-radio-label-inline,
+div#fox-container-c458 div.fox-item-checkbox-group div.fox-item-checkbox-group-label-inline
+{
+	display: inline-block;
+}
+
+div#fox-container-c458 div.fox-item-radio div.fox-item-radio-label-inline:not(:last-child),
+div#fox-container-c458 div.fox-item-checkbox-group div.fox-item-checkbox-group-label-inline:not(:last-child)
+{
+	margin-right: 16px;
+}
+
+html[dir="rtl"] div#fox-container-c458 div.fox-item-radio div.fox-item-radio-label-inline:not(:last-child),
+html[dir="rtl"] div#fox-container-c458 div.fox-item-checkbox-group div.fox-item-checkbox-group-label-inline:not(:last-child)
+{
+	margin-right: 0;
+	margin-left: 16px;
+}
+
+div#fox-container-c458 .fox-form-inline div.fox-item-newsletter div.controls span:not(.required),
+div#fox-container-c458 .fox-form-inline div.fox-item-radio div.controls span:not(.required),
+div#fox-container-c458 .fox-form-inline div.fox-item-checkbox-group div.controls span:not(.required),
+div#fox-container-c458 div.fox-item-radio div.controls label,
+div#fox-container-c458 div.fox-item-checkbox-group div.controls label
+{
+	display: inline-block;
+	min-height: 20px;
+	margin: 0;
+}
+
+div#fox-container-c458 .fox-form-inline div.fox-item-newsletter div.controls span:not(.required),
+div#fox-container-c458 .fox-form-inline div.fox-item-radio div.controls span:not(.required),
+div#fox-container-c458 .fox-form-inline div.fox-item-radio div.controls label:not(:last-child),
+div#fox-container-c458 .fox-form-inline div.fox-item-checkbox-group div.controls span:not(.required),
+div#fox-container-c458 .fox-form-inline div.fox-item-checkbox-group div.controls label:not(:last-child)
+{
+	margin-right: 16px;
+}
+
+html[dir="rtl"] div#fox-container-c458 .fox-form-inline div.fox-item-newsletter div.controls span:not(.required),
+html[dir="rtl"] div#fox-container-c458 .fox-form-inline div.fox-item-radio div.controls span:not(.required),
+html[dir="rtl"] div#fox-container-c458 .fox-form-inline div.fox-item-radio div.controls label:not(:last-child),
+html[dir="rtl"] div#fox-container-c458 .fox-form-inline div.fox-item-checkbox-group div.controls span:not(.required),
+html[dir="rtl"] div#fox-container-c458 .fox-form-inline div.fox-item-checkbox-group div.controls label:not(:last-child)
+{
+	margin-right: 0;
+	margin-left: 16px;
+}
+
+/* ----- display warning/error inside item ----- */
+
+div#fox-container-c458 div.controls span.alert
+{
+	display: block;
+	margin: 0;
+}
+
+div#fox-container-c458 .control-group.error .fox-label-inside-no-placeholder
+{
+	color: #b94a48;
+}
+
+/* ----- recaptcha ----- */
+
+div#fox-container-c458 .fox-item-recaptcha div.controls .fox-item-recaptcha-display
+{
+	display: inline-block;
+}
+
+/* Ensure that the template does not opacifies the whole button, or our spinner will be opacified too */
+/* [disabled] or :disabled ? http://stackoverflow.com/questions/20141450/ */
+div#fox-container-c458 button:disabled
+{
+	opacity: 1;
+}
+
+div#fox-container-c458 button:disabled .caption
+{
+	opacity: .3;
+}
+
+/* Characters left counter */
+div#fox-container-c458 .text-count-wrapper
+{
+	text-align: right;
+}
+html[dir="rtl"] .text-count-wrapper
+{
+	text-align: left;
+}
+
+/* Spinner */
+.fox-item-submit button, .upload-spinner-container
+{
+	position: relative;
+}
+
+.upload-spinner-container
+{
+	vertical-align: middle;
+}
+
+.fox-item-submit .spinner,
+div#fox-container-c458 span.qq-upload-spinner
+{
+	padding: 0;
+	width: 1em;
+	height: 1em;
+	border-radius: 50%;
+	-webkit-transform: translateZ(0);
+	-ms-transform: translateZ(0);
+	transform: translateZ(0);
+
+	-webkit-animation: circle1 1.7s infinite ease;
+	animation: circle1 1.7s infinite ease;
+}
+
+.fox-item-submit .spinner
+{
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	margin-left: -.5em;
+	margin-top: -.5em;
+}
+
+@-webkit-keyframes circle1
+{
+	0%
+	{
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+		box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+	}
+	5%,
+	95%
+	{
+		box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+	}
+	10%,
+	59%
+	{
+		box-shadow: 0 -0.83em 0 -0.4em, -0.087em -0.825em 0 -0.42em, -0.173em -0.812em 0 -0.44em, -0.256em -0.789em 0 -0.46em, -0.297em -0.775em 0 -0.477em;
+	}
+	20%
+	{
+		box-shadow: 0 -0.83em 0 -0.4em, -0.338em -0.758em 0 -0.42em, -0.555em -0.617em 0 -0.44em, -0.671em -0.488em 0 -0.46em, -0.749em -0.34em 0 -0.477em;
+	}
+	38%
+	{
+		box-shadow: 0 -0.83em 0 -0.4em, -0.377em -0.74em 0 -0.42em, -0.645em -0.522em 0 -0.44em, -0.775em -0.297em 0 -0.46em, -0.82em -0.09em 0 -0.477em;
+	}
+	100%
+	{
+		-webkit-transform: rotate(360deg);
+		transform: rotate(360deg);
+		box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+	}
+}
+
+@keyframes circle1
+{
+	0%
+	{
+		-webkit-transform: rotate(0deg);
+		transform: rotate(0deg);
+		box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+	}
+	5%,
+	95%
+	{
+		box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+	}
+	10%,
+	59%
+	{
+		box-shadow: 0 -0.83em 0 -0.4em, -0.087em -0.825em 0 -0.42em, -0.173em -0.812em 0 -0.44em, -0.256em -0.789em 0 -0.46em, -0.297em -0.775em 0 -0.477em;
+	}
+	20%
+	{
+		box-shadow: 0 -0.83em 0 -0.4em, -0.338em -0.758em 0 -0.42em, -0.555em -0.617em 0 -0.44em, -0.671em -0.488em 0 -0.46em, -0.749em -0.34em 0 -0.477em;
+	}
+	38%
+	{
+		box-shadow: 0 -0.83em 0 -0.4em, -0.377em -0.74em 0 -0.42em, -0.645em -0.522em 0 -0.44em, -0.775em -0.297em 0 -0.46em, -0.82em -0.09em 0 -0.477em;
+	}
+	100%
+	{
+		-webkit-transform: rotate(360deg);
+		transform: rotate(360deg);
+		box-shadow: 0 -0.83em 0 -0.4em, 0 -0.83em 0 -0.42em, 0 -0.83em 0 -0.44em, 0 -0.83em 0 -0.46em, 0 -0.83em 0 -0.477em;
+	}
+}
+
+/* /Spinner */
+
+/* ----- [START] Bootstrap v2.3.2 grid system [START] ----- */
+
+@-ms-viewport
+{
+	width: device-width;
+}
+
+@media (min-width: 768px)
+{
+	div#fox-container-c458 .fox-row
+	{
+		width: 100%;
+	}
+
+	div#fox-container-c458 .fox-row:before,
+	div#fox-container-c458 .fox-row:after
+	{
+		display: table;
+		line-height: 0;
+		content: "";
+	}
+
+	div#fox-container-c458 .fox-row:after
+	{
+		clear: both;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column
+	{
+		display: block;
+		float: left;
+		width: 100%;
+		min-height: 30px;
+		margin-left: 2.7624309392265194%;
+		box-sizing: border-box;
+	}
+
+	html[dir="rtl"] div#fox-container-c458 .fox-row .fox-column
+	{
+		float: right;
+		margin-left: 0;
+		margin-right: 2.7624309392265194%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column:first-child
+	{
+		margin-left: 0;
+	}
+
+	html[dir="rtl"] div#fox-container-c458 .fox-row .fox-column:first-child
+	{
+		margin-right: 0;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column12
+	{
+		width: 100%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column11
+	{
+		width: 91.43646408839778%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column10
+	{
+		width: 82.87292817679558%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column9
+	{
+		width: 74.30939226519337%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column8
+	{
+		width: 65.74585635359117%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column7
+	{
+		width: 57.18232044198895%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column6
+	{
+		width: 48.61878453038674%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column5
+	{
+		width: 40.05524861878453%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column4
+	{
+		width: 31.491712707182323%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column3
+	{
+		width: 22.92817679558011%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column2
+	{
+		width: 14.3646408839779%;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column1
+	{
+		width: 5.801104972375691%;
+	}
+}
+
+@media (max-width: 767px)
+{
+	div#fox-container-c458 .fox-row
+	{
+		width: 100%;
+	}
+
+	div#fox-container-c458 .fox-row:before,
+	div#fox-container-c458 .fox-row:after
+	{
+		display: table;
+		line-height: 0;
+		content: "";
+	}
+
+	div#fox-container-c458 .fox-row:after
+	{
+		clear: both;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column
+	{
+		display: block;
+		float: none;
+		width: 100%;
+		margin-left: 0;
+		box-sizing: border-box;
+	}
+
+	html[dir="rtl"] div#fox-container-c458 .fox-row .fox-column
+	{
+		margin-right: 0;
+	}
+
+	div#fox-container-c458 .fox-row .fox-column12
+	{
+		width: 100%;
+		box-sizing: border-box;
+	}
+}
+
+/* ----- [END] Bootstrap Responsive v2.3.2 [END] ----- */
