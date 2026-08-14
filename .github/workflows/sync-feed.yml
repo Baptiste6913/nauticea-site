@@ -1,0 +1,64 @@
+# Phase B (livré désactivé) : synchronisation du flux XML Boats Group.
+#
+# Le workflow ne fait rien tant que le secret FEED_URL n'est pas défini
+# dans les réglages du dépôt (Settings > Secrets and variables > Actions).
+# Une fois FEED_URL renseigné (URL du flux Open Marine fourni par
+# Boats Group), chaque exécution télécharge le flux, le normalise en JSON
+# et committe le résultat si le contenu a changé.
+name: Synchronisation flux Boats Group
+
+on:
+  schedule:
+    # Deux fois par jour : 05h00 et 17h00 UTC.
+    - cron: "0 5 * * *"
+    - cron: "0 17 * * *"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Vérifier la présence du secret FEED_URL
+        id: garde
+        env:
+          FEED_URL: ${{ secrets.FEED_URL }}
+        run: |
+          if [ -z "$FEED_URL" ]; then
+            echo "actif=false" >> "$GITHUB_OUTPUT"
+            echo "FEED_URL absent : synchronisation désactivée."
+          else
+            echo "actif=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Checkout
+        if: steps.garde.outputs.actif == 'true'
+        uses: actions/checkout@v4
+
+      - name: Node
+        if: steps.garde.outputs.actif == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Télécharger et normaliser le flux
+        if: steps.garde.outputs.actif == 'true'
+        env:
+          FEED_URL: ${{ secrets.FEED_URL }}
+        run: |
+          curl -sSf "$FEED_URL" -o /tmp/feed.xml
+          node --experimental-strip-types scripts/normalise-feed.mts /tmp/feed.xml corpus-nauticea/bateaux-boatsgroup.json
+
+      - name: Committer si diff
+        if: steps.garde.outputs.actif == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add corpus-nauticea/bateaux-boatsgroup.json
+          if git diff --cached --quiet; then
+            echo "Aucun changement dans le flux."
+          else
+            git commit -m "Synchronisation du flux Boats Group"
+            git push
+          fi

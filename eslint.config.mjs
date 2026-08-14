@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Données extraites du site historique (HTML/JS Joomla, pas du code du projet).
+    "corpus-nauticea/**",
   ]),
 ]);
 

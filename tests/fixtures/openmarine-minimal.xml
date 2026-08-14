@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- FIXTURE DE TEST écrite à la main : échantillon minimal au format
+     Open Marine pour les tests unitaires du parseur boatsgroup.ts.
+     Ne contient aucune donnée réelle. -->
+<OpenMarine>
+  <Vehicle>
+    <VehicleID>12345</VehicleID>
+    <MakeString>SEALINE</MakeString>
+    <Model>C390</Model>
+    <ModelYear>2026</ModelYear>
+    <Condition>New</Condition>
+    <BoatCategory>Power</BoatCategory>
+    <Price>700000</Price>
+    <Currency>EUR</Currency>
+    <NominalLength>11.99</NominalLength>
+    <Description><![CDATA[Exemple de description & caractères spéciaux.]]></Description>
+    <LastModificationDate>2026-08-01</LastModificationDate>
+    <Images>
+      <ImageURL>https://exemple.invalid/photo-1.jpg</ImageURL>
+      <ImageURL>https://exemple.invalid/photo-2.jpg</ImageURL>
+    </Images>
+  </Vehicle>
+  <Vehicle>
+    <VehicleID>67890</VehicleID>
+    <MakeString>BAVARIA</MakeString>
+    <Model>33 Sport</Model>
+    <Condition>Used</Condition>
+    <BoatCategory>Sail</BoatCategory>
+    <Currency>EUR</Currency>
+  </Vehicle>
+</OpenMarine>
