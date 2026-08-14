@@ -1,26 +1,61 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/*
+  Tokens dérivés de l'identité existante :
+  - marine : fond du logo Nauticea Yachting
+  - azur : bleu clair « YACHTING » du logo
+  - ecume : fond clair des sections, dérivé du blanc cassé du site actuel
+  - encre : texte courant
+  - sable : accent discret issu des teintes bois des photos Sealine
+*/
+@theme {
+  --color-marine: #0e1a3c;
+  --color-marine-2: #16264f;
+  --color-azur: #35a8e0;
+  --color-azur-2: #1d7fb5;
+  --color-ecume: #f2f5f9;
+  --color-encre: #1c2434;
+  --color-sable: #b98a5a;
+
+  --font-sans: var(--font-corps), system-ui, "Segoe UI", Arial, sans-serif;
+  --font-display: var(--font-titres), var(--font-corps), system-ui, sans-serif;
+
+  --text-display-xl: 2.5rem;
+  --text-display-l: 1.875rem;
+  --text-display-m: 1.375rem;
+  --text-display-s: 1.125rem;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html {
+  scroll-behavior: smooth;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ffffff;
+  color: var(--color-encre);
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-azur);
+  outline-offset: 2px;
 }

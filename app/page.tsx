@@ -1,69 +1,97 @@
 import Image from "next/image";
+import Link from "next/link";
+import Slider from "@/components/Slider";
+import BoatCard from "@/components/BoatCard";
+import { getBoats, getPages } from "@/lib/sources/corpus";
+import { SITE } from "@/lib/site";
+import { typoFr } from "@/lib/format";
 
-export default function Home() {
+const DIAPOS = [
+  { src: "/site/slider/sealine-c390-3.jpg", alt: "Sealine C390 en navigation" },
+  { src: "/site/slider/new_Sealine_S390-exterior.jpg", alt: "Sealine S390, extérieur" },
+  { src: "/site/slider/rick-280.jpg", alt: "RYCK 280 en navigation" },
+  { src: "/site/slider/sealine-c335-photo-exterieur-2021.jpg", alt: "Sealine C335, extérieur" },
+];
+
+// Le texte d'accueil du corpus est un bloc unique : on en extrait les
+// sections Sealine et RYCK telles quelles.
+function sectionsAccueil(texte: string): { sealine: string; ryck: string } {
+  const iSealine = texte.indexOf("SEALINE exploite");
+  const iRyckTitre = texte.indexOf("RYCK YACHTS");
+  const iRyck = texte.indexOf("RYCK,", iRyckTitre);
+  const fin = texte.indexOf("Accueil    |");
+  return {
+    sealine: texte.slice(iSealine, iRyckTitre).trim(),
+    ryck: texte.slice(iRyck, fin > 0 ? fin : undefined).trim(),
+  };
+}
+
+export default function Accueil() {
+  const pages = getPages();
+  const { sealine, ryck } = sectionsAccueil(pages["accueil"] ?? "");
+  const recentes = getBoats().slice(0, 3);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+    <>
+      <Slider diapos={DIAPOS} />
+      <section className="mx-auto max-w-6xl px-4 py-12">
+        <h1 className="text-center text-display-l font-bold text-marine md:text-display-xl">
+          Yachts Sealine et RYCK chez Nauticea Yachting Fréjus
+        </h1>
+        <div className="mt-10 grid gap-10 md:grid-cols-2">
+          <article className="rounded-lg bg-ecume p-6">
             <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+              src="/site/logos/sealinelogo550.png"
+              alt="Sealine"
+              width={220}
+              height={112}
+              className="mx-auto"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <h2 className="mt-4 text-display-m font-semibold text-marine">Sealine</h2>
+            <p className="mt-3 leading-relaxed text-encre/90">{typoFr(sealine)}</p>
+            <a
+              href={SITE.marques.sealine}
+              rel="noopener"
+              className="mt-4 inline-block font-semibold text-azur-2 hover:underline"
+            >
+              Découvrir la gamme Sealine
+            </a>
+          </article>
+          <article className="rounded-lg bg-ecume p-6">
+            <Image
+              src="/site/logos/Logo-Ricknoir.jpg"
+              alt="RYCK Yachts"
+              width={180}
+              height={96}
+              className="mx-auto"
+            />
+            <h2 className="mt-4 text-display-m font-semibold text-marine">RYCK Yachts</h2>
+            <p className="mt-3 leading-relaxed text-encre/90">{typoFr(ryck)}</p>
+            <a
+              href={SITE.marques.ryck}
+              rel="noopener"
+              className="mt-4 inline-block font-semibold text-azur-2 hover:underline"
+            >
+              Découvrir la gamme RYCK
+            </a>
+          </article>
         </div>
-      </main>
-    </div>
+      </section>
+      <section className="bg-ecume">
+        <div className="mx-auto max-w-6xl px-4 py-12">
+          <div className="flex items-baseline justify-between gap-4">
+            <h2 className="text-display-l font-bold text-marine">Dernières annonces</h2>
+            <Link href="/annonces" className="font-semibold text-azur-2 hover:underline">
+              Toutes les annonces
+            </Link>
+          </div>
+          <div className="mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {recentes.map((b) => (
+              <BoatCard key={b.slug} boat={b} />
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
