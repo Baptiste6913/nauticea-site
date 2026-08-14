@@ -1,0 +1,24 @@
+RAPPORT D'INVENTAIRE CORPUS NAUTICEA
+Source : site live www.nauticeayachting.fr (2026-08-14)
+(miroir local inaccessible depuis l'environnement distant)
+
+Annonces extraites : 28 (attendu ~28)
+Pages mortes ignorées : 3 (522-f42.html, 524-excellence-38.html, 527-v53.html)
+Répartition par état : {"occasion": 19, "neuf": 9}
+Photos totales référencées : 632
+Redirections générées : 45
+Pages statiques extraites : a-propos, accueil, contact, mentions-legales, occasions, places-de-port, stock-neuf
+Actualités extraites : 4
+
+CHAMPS MANQUANTS FLAGUÉS (0) :
+
+NOTES COMPLÉMENTAIRES :
+  - 3 liens morts sur le site actuel (522-f42, 524-excellence-38, 527-v53,
+    liés depuis stock-neuf mais dépubliés) : exclus, signalés, non corrigés.
+  - Vidéos des actualités trop lourdes pour le versionnage git
+    (sealine-S430.mp4 825 Mo, C335-film.mp4 95 Mo, S390-film.mp4 48 Mo) :
+    référencées en URL absolue vers le site actuel, question ouverte.
+  - Dates des actualités absentes du HTML public : valeur a_confirmer.
+  - Écart directive : corpus construit depuis le site live (2026-08-14),
+    le miroir local C:\Users\bapti étant inaccessible depuis la session cloud.
+  - Photos téléchargées : 632/632, 135 Mo, dans corpus-nauticea/photos/<slug>/.
