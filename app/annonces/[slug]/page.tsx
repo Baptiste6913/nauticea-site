@@ -146,7 +146,7 @@ export default async function DetailAnnonce({ params }: Props) {
                   <th scope="row" className="py-2 pr-4 text-left font-medium text-encre/70">
                     {typoFr(cle)}
                   </th>
-                  <td className="sonde py-2 text-right font-medium text-azur-2">
+                  <td className="sonde py-2 text-right font-semibold text-azur-2">
                     {typoFr(formatValeurSpec(valeur))}
                   </td>
                 </tr>

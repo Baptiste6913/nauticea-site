@@ -15,20 +15,25 @@ const corps = Fira_Sans({
 });
 
 // Display DA : Archivo variable avec l'axe de largeur (wdth 125 posé en
-// CSS), lettrage de signalétique portuaire (design/DA.md).
+// CSS), lettrage de signalétique portuaire (design/DA.md). preload
+// désactivé : la variable pèse 88 Ko et concurrençait l'image LCP sur
+// mobile ; le swap tardif des titres est un compromis assumé.
 const titres = Archivo({
   variable: "--font-titres",
   subsets: ["latin"],
   axes: ["wdth"],
   display: "swap",
+  preload: false,
 });
 
-// Utilitaire DA : chiffres d'instruments pour specs et prix.
+// Utilitaire DA : chiffres d'instruments pour specs et prix. Deux
+// graisses et pas de preload : même arbitrage budget que le display.
 const sondes = IBM_Plex_Mono({
   variable: "--font-sondes",
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "600"],
   display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {

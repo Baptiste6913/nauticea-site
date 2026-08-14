@@ -65,8 +65,10 @@ export default function Galerie({
                 onClick={() => setIndex(i)}
                 aria-label={`Afficher la photo ${i + 1}`}
                 aria-current={i === index}
-                className={`relative block aspect-[4/3] w-full overflow-hidden rounded border-2 ${
-                  i === index ? "border-azur" : "border-transparent"
+                className={`relative block aspect-[4/3] w-full overflow-hidden rounded border-2 transition-[border-color,opacity] duration-200 ${
+                  i === index
+                    ? "border-azur"
+                    : "border-transparent opacity-80 hover:opacity-100 hover:border-azur-2/50"
                 }`}
               >
                 <Image
@@ -74,6 +76,7 @@ export default function Galerie({
                   alt=""
                   fill
                   sizes="120px"
+                  quality={55}
                   className="object-cover"
                 />
               </button>

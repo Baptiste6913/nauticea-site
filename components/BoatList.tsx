@@ -105,9 +105,9 @@ export default function BoatList({
         </div>
       ) : (
         <ul className="mt-6 grid list-none gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3">
-          {visibles.map((b) => (
+          {visibles.map((b, i) => (
             <li key={b.slug}>
-              <BoatCardDA boat={b} />
+              <BoatCardDA boat={b} prioritaire={i < 3} />
             </li>
           ))}
         </ul>

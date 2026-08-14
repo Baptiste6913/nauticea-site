@@ -45,13 +45,13 @@ export default async function Contact({
               <p className="mt-4 space-y-2 text-lg font-semibold">
                 <a
                   href={`tel:${SITE.telephoneMobileHref}`}
-                  className="sonde block text-azur-2 hover:underline"
+                  className="sonde block py-1 text-azur-2 hover:underline"
                 >
                   {typoFr(`${SITE.responsable} : ${SITE.telephoneMobile}`)}
                 </a>
                 <a
                   href={`tel:${SITE.telephoneFixeHref}`}
-                  className="sonde block text-azur-2 hover:underline"
+                  className="sonde block py-1 text-azur-2 hover:underline"
                 >
                   {typoFr(`Bureau : ${SITE.telephoneFixe}`)}
                 </a>
@@ -81,14 +81,14 @@ export default async function Contact({
           <p className="mt-3 text-sm">
             <a
               href={`tel:${SITE.telephoneMobileHref}`}
-              className="sonde font-semibold text-azur-2 hover:underline"
+              className="sonde inline-block py-1 font-semibold text-azur-2 hover:underline"
             >
               {typoFr(`Mobile : ${SITE.telephoneMobile}`)}
             </a>
             <br />
             <a
               href={`tel:${SITE.telephoneFixeHref}`}
-              className="sonde font-semibold text-azur-2 hover:underline"
+              className="sonde inline-block py-1 font-semibold text-azur-2 hover:underline"
             >
               {typoFr(`Bureau : ${SITE.telephoneFixe}`)}
             </a>

@@ -16,7 +16,14 @@ const ETIQUETTES: Record<string, string> = {
   occasion: "Occasion",
 };
 
-export default function BoatCardDA({ boat }: { boat: Boat }) {
+export default function BoatCardDA({
+  boat,
+  prioritaire = false,
+}: {
+  boat: Boat;
+  /** Cartes au-dessus de la ligne de flottaison : image chargée en priorité. */
+  prioritaire?: boolean;
+}) {
   const photo = boat.photos[0];
   return (
     <Tilt className="h-full">
@@ -33,6 +40,7 @@ export default function BoatCardDA({ boat }: { boat: Boat }) {
                 alt={`${boat.titre}, ${boat.sous_categorie}`}
                 fill
                 sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                priority={prioritaire}
                 className="object-cover"
               />
             ) : (
@@ -45,9 +53,9 @@ export default function BoatCardDA({ boat }: { boat: Boat }) {
             </p>
           </div>
           <div className="p-4">
-            <h3 className="text-display-s font-semibold text-marine group-hover:text-azur-2">
+            <h2 className="text-display-s font-semibold text-marine group-hover:text-azur-2">
               {boat.titre}
-            </h3>
+            </h2>
             <TraceIsobathe graine={Number(boat.id) || 3} />
             <p className="mt-1 text-xs uppercase tracking-wide text-encre/70">
               {typoFr(boat.sous_categorie.replace("-", " "))}

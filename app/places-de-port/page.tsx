@@ -46,7 +46,7 @@ export default function PlacesDePort() {
                 key={p.dimensions}
                 className={i % 2 ? "bg-ecume" : "bg-white"}
               >
-                <td className="sonde px-4 py-3 font-medium">{p.dimensions}</td>
+                <td className="sonde px-4 py-3 font-semibold">{p.dimensions}</td>
                 <td className="px-4 py-3">{p.port}</td>
                 <td className="sonde px-4 py-3">{p.amodiation}</td>
               </tr>
