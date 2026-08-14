@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import ContactForm from "@/components/ContactForm";
+import Surface from "@/components/da/Surface";
 import { SITE, emailDisponible } from "@/lib/site";
 import { typoFr } from "@/lib/format";
 
@@ -35,7 +36,7 @@ export default async function Contact({
               <ContactForm annonce={annonce} />
             </>
           ) : (
-            <div className="rounded-lg bg-ecume p-6">
+            <Surface niveau="flotte" className="rounded-lg bg-ecume p-6">
               <p className="leading-relaxed text-encre/90">
                 {typoFr(
                   "Pour toute demande d'information, appelez-nous directement :"
@@ -44,13 +45,13 @@ export default async function Contact({
               <p className="mt-4 space-y-2 text-lg font-semibold">
                 <a
                   href={`tel:${SITE.telephoneMobileHref}`}
-                  className="block text-azur-2 hover:underline"
+                  className="sonde block text-azur-2 hover:underline"
                 >
                   {typoFr(`${SITE.responsable} : ${SITE.telephoneMobile}`)}
                 </a>
                 <a
                   href={`tel:${SITE.telephoneFixeHref}`}
-                  className="block text-azur-2 hover:underline"
+                  className="sonde block text-azur-2 hover:underline"
                 >
                   {typoFr(`Bureau : ${SITE.telephoneFixe}`)}
                 </a>
@@ -65,7 +66,7 @@ export default async function Contact({
                   </a>
                 </p>
               )}
-            </div>
+            </Surface>
           )}
         </section>
         <aside>
@@ -80,14 +81,14 @@ export default async function Contact({
           <p className="mt-3 text-sm">
             <a
               href={`tel:${SITE.telephoneMobileHref}`}
-              className="font-semibold text-azur-2 hover:underline"
+              className="sonde font-semibold text-azur-2 hover:underline"
             >
               {typoFr(`Mobile : ${SITE.telephoneMobile}`)}
             </a>
             <br />
             <a
               href={`tel:${SITE.telephoneFixeHref}`}
-              className="font-semibold text-azur-2 hover:underline"
+              className="sonde font-semibold text-azur-2 hover:underline"
             >
               {typoFr(`Bureau : ${SITE.telephoneFixe}`)}
             </a>

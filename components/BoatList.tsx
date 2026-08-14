@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { Boat } from "@/lib/types";
-import BoatCard from "@/components/BoatCard";
+import BoatCardDA from "@/components/da/BoatCardDA";
+import Link from "next/link";
 
 type Tri = "recentes" | "prix-asc" | "prix-desc";
 type FiltreEtat = "tous" | "neuf" | "occasion";
@@ -65,19 +66,48 @@ export default function BoatList({
             </select>
           </label>
         )}
-        <p className="ml-auto text-sm text-encre/70">
+        <p className="sonde ml-auto text-sm text-encre/70">
           {visibles.length} annonce{visibles.length > 1 ? "s" : ""}
         </p>
       </div>
       {visibles.length === 0 ? (
-        <p className="mt-10 text-center text-encre/70">
-          Aucune annonce dans cette sélection pour le moment.
-        </p>
+        <div className="mx-auto mt-12 max-w-sm text-center">
+          <svg
+            viewBox="0 0 240 40"
+            aria-hidden="true"
+            className="mx-auto h-8 w-48"
+            preserveAspectRatio="none"
+          >
+            <path
+              d="M0 22 Q30 14 60 20 T120 18 T180 24 T240 16"
+              fill="none"
+              stroke="var(--color-azur-2)"
+              strokeWidth="1.6"
+              opacity="0.5"
+            />
+            <path
+              d="M0 32 Q40 26 80 30 T160 28 T240 30"
+              fill="none"
+              stroke="var(--color-azur-2)"
+              strokeWidth="1"
+              opacity="0.3"
+            />
+          </svg>
+          <p className="mt-4 font-medium text-encre/80">
+            Aucune annonce dans cette sélection pour le moment.
+          </p>
+          <Link
+            href="/annonces"
+            className="mt-4 inline-block rounded bg-marine px-5 py-2.5 text-sm font-semibold text-white hover:bg-marine-2"
+          >
+            Voir toutes les annonces
+          </Link>
+        </div>
       ) : (
         <ul className="mt-6 grid list-none gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3">
           {visibles.map((b) => (
             <li key={b.slug}>
-              <BoatCard boat={b} />
+              <BoatCardDA boat={b} />
             </li>
           ))}
         </ul>

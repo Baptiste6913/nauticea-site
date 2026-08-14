@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import Isobathes from "@/components/da/Isobathes";
+import Surface from "@/components/da/Surface";
 import { SITE, emailDisponible } from "@/lib/site";
 import { typoFr } from "@/lib/format";
 
@@ -14,7 +16,17 @@ export const metadata: Metadata = {
 
 export default function Carte() {
   return (
-    <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center px-4 py-12 text-center">
+    <div className="relative overflow-hidden bg-marine">
+      <Isobathes
+        graine={11}
+        variante="fond"
+        opacite={0.25}
+        className="absolute inset-0 h-full w-full"
+      />
+      <Surface
+        niveau="domine"
+        className="relative mx-auto my-12 flex max-w-md flex-col items-center rounded-lg bg-white px-6 py-10 text-center"
+      >
       <Image
         src="/site/logos/logo-1382603607.png"
         alt="Nauticea Yachting"
@@ -34,13 +46,13 @@ export default function Carte() {
       <div className="mt-6 flex w-full flex-col gap-3">
         <a
           href={`tel:${SITE.telephoneMobileHref}`}
-          className="rounded bg-marine px-5 py-3 font-semibold text-white hover:bg-marine-2"
+          className="sonde rounded bg-marine px-5 py-3 font-semibold text-white hover:bg-marine-2"
         >
           {typoFr(`${SITE.responsable} : ${SITE.telephoneMobile}`)}
         </a>
         <a
           href={`tel:${SITE.telephoneFixeHref}`}
-          className="rounded border border-marine px-5 py-3 font-semibold text-marine hover:bg-ecume"
+          className="sonde rounded border border-marine px-5 py-3 font-semibold text-marine hover:bg-ecume"
         >
           {typoFr(`Bureau : ${SITE.telephoneFixe}`)}
         </a>
@@ -65,6 +77,7 @@ export default function Carte() {
           Formulaire de contact
         </Link>
       </div>
+      </Surface>
     </div>
   );
 }

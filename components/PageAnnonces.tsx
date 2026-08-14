@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Boat } from "@/lib/types";
 import BoatList from "@/components/BoatList";
+import Reveal from "@/components/da/Reveal";
 import { getBoats } from "@/lib/sources/corpus";
 
 const CATEGORIES = [
@@ -63,13 +64,13 @@ export default function PageAnnonces({
           })}
         </ul>
       </nav>
-      <div className="mt-8">
+      <Reveal className="mt-8">
         <BoatList
           boats={boats}
           filtreEtatInitial={filtreEtatInitial}
           masquerFiltreEtat={masquerFiltreEtat}
         />
-      </div>
+      </Reveal>
     </div>
   );
 }

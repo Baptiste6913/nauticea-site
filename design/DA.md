@@ -158,6 +158,30 @@ interaction ou entrée de viewport, sauf la dérive du hero. Le kill
 switch global `prefers-reduced-motion` de `globals.css` reste la
 garantie de dernier ressort.
 
+## Rollout session B (application page par page)
+
+- Listes d'annonces, catégories, stock neuf, occasions : cartes
+  `BoatCardDA` (l'ancienne carte est supprimée), compteur et tris en
+  registre sonde, reveal orchestré sur la grille, état vide au niveau
+  DA (courbe + lien retour).
+- Actualités (liste) : cartes en relief `affleure`, trace isobathe
+  sous les titres. Détail actualité : typographie seule.
+- Marques : cartes en relief `affleure`, reveal.
+- Places de port : tableau en relief `affleure`, dimensions et
+  amodiations en registre sonde.
+- Contact : panneau dégradé en relief `flotte`, téléphones en registre
+  sonde ; le formulaire garde ses styles de champs (lisibilité avant
+  décor).
+- Carte de visite : fond marine avec champ d'isobathes (seul champ de
+  la page), carte blanche en relief `domine`, téléphones en sonde.
+- Pied de page : fond abysse, bande d'isobathes avec sondes
+  décoratives en tête, téléphones en sonde. Constante de toutes les
+  pages.
+- 404 : « Hors des sondes », une seule courbe, retour au mouillage.
+- Exceptions assumées : mentions légales et à propos reçoivent la
+  typographie seule (pages de texte, le décor n'y apporte rien) ;
+  l'en-tête de navigation reste inchangé (constante déjà sobre).
+
 ## Ce qu'on ne fera pas
 
 Glassmorphism, radial glows, gradient mesh, dégradés violets, pill

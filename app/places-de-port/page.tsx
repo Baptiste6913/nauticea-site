@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Surface from "@/components/da/Surface";
 import { typoFr } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -30,7 +31,7 @@ export default function PlacesDePort() {
       <p className="mt-3 text-encre/80">
         {typoFr("Dimensions en mètres (tolérance longueur 10 %).")}
       </p>
-      <div className="mt-6 overflow-x-auto">
+      <Surface className="mt-6 overflow-x-auto rounded-lg">
         <table className="w-full border-collapse text-sm">
           <thead>
             <tr className="bg-marine text-left text-white">
@@ -45,14 +46,14 @@ export default function PlacesDePort() {
                 key={p.dimensions}
                 className={i % 2 ? "bg-ecume" : "bg-white"}
               >
-                <td className="px-4 py-3 font-medium">{p.dimensions}</td>
+                <td className="sonde px-4 py-3 font-medium">{p.dimensions}</td>
                 <td className="px-4 py-3">{p.port}</td>
-                <td className="px-4 py-3">{p.amodiation}</td>
+                <td className="sonde px-4 py-3">{p.amodiation}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div>
+      </Surface>
       <p className="mt-6 leading-relaxed text-encre/80">
         {typoFr("Pour plus d'informations, merci de nous contacter.")}
       </p>
