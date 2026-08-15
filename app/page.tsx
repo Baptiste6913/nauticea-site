@@ -173,6 +173,26 @@ export default function Accueil() {
               <BoatCardDA key={b.slug} boat={b} />
             ))}
           </div>
+          {/* Maillage interne : catégories avec stock uniquement. */}
+          <nav aria-label="Parcourir par catégorie" className="mt-8">
+            <ul className="flex flex-wrap gap-2">
+              {[
+                { href: "/annonces/bateaux-moteur", label: "Bateaux moteur" },
+                { href: "/annonces/catamaran", label: "Catamaran" },
+                { href: "/stock-neuf", label: "Stock neuf" },
+                { href: "/occasions", label: "Occasions" },
+              ].map((c) => (
+                <li key={c.href}>
+                  <Link
+                    href={c.href}
+                    className="inline-block rounded border border-encre/20 bg-white px-4 py-2 text-sm font-medium text-encre hover:border-marine hover:text-marine"
+                  >
+                    {c.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
         </Reveal>
       </section>
 
