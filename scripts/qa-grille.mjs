@@ -19,6 +19,7 @@ const PAGES = [
   ["a-propos", "/a-propos"],
   ["marques", "/marques"],
   ["places-de-port", "/places-de-port"],
+  ["projet", "/projet"],
   ["contact", "/contact"],
   ["mentions-legales", "/mentions-legales"],
   ["carte", "/carte"],
@@ -39,6 +40,7 @@ for (const [vue, viewport] of VUES) {
   for (const [nom, chemin] of PAGES) {
     const page = await ctx.newPage();
     await page.goto(LOCAL + chemin, { waitUntil: "networkidle", timeout: 30000 });
+    await page.waitForTimeout(600);
     await page.evaluate(async () => {
       const pas = window.innerHeight * 0.7;
       for (let y = 0; y < document.body.scrollHeight; y += pas) {
@@ -46,6 +48,11 @@ for (const [vue, viewport] of VUES) {
         await new Promise((r) => setTimeout(r, 150));
       }
       window.scrollTo(0, 0);
+      // Aide de capture pleine page : fige l'état final des reveals
+      // (l'observation au scroll est validée à part, au navigateur).
+      document
+        .querySelectorAll("[data-reveal]")
+        .forEach((e) => e.classList.add("est-visible"));
     });
     await page.waitForTimeout(900);
     await page.screenshot({ path: `${OUT}/${nom}-${vue}.png`, fullPage: true });

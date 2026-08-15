@@ -115,7 +115,7 @@ export default function CarrouselHero({ diapos }: { diapos: DiapoHero[] }) {
       >
         ›
       </button>
-      <div className="absolute inset-x-0 bottom-3 flex justify-center gap-2.5">
+      <div className="absolute inset-x-0 bottom-1 flex justify-center">
         {diapos.map((d, i) => (
           <button
             key={d.src}
@@ -123,10 +123,15 @@ export default function CarrouselHero({ diapos }: { diapos: DiapoHero[] }) {
             onClick={() => embla?.scrollTo(i)}
             aria-label={`Aller à la photo ${i + 1}`}
             aria-current={i === index}
-            className={`h-2.5 w-2.5 rounded-full border border-white ${
-              i === index ? "bg-white" : "bg-marine/40"
-            }`}
-          />
+            className="flex h-6 w-6 items-center justify-center"
+          >
+            <span
+              aria-hidden="true"
+              className={`h-2.5 w-2.5 rounded-full border border-white ${
+                i === index ? "bg-white" : "bg-marine/40"
+              }`}
+            />
+          </button>
         ))}
       </div>
     </section>
