@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import Isobathes from "@/components/da/Isobathes";
 import Surface from "@/components/da/Surface";
 import { SITE, emailDisponible } from "@/lib/site";
 import { typoFr } from "@/lib/format";
@@ -16,14 +15,7 @@ export const metadata: Metadata = {
 
 export default function Carte() {
   return (
-    <div className="relative overflow-hidden bg-ecume">
-      <Isobathes
-        graine={11}
-        variante="fond"
-        couleur="var(--color-marine)"
-        opacite={0.07}
-        className="absolute inset-0 h-full w-full"
-      />
+    <div className="relative">
       <Surface
         niveau="domine"
         className="relative mx-auto my-12 flex max-w-md flex-col items-center rounded-lg bg-white px-6 py-10 text-center"
