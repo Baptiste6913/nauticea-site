@@ -53,6 +53,7 @@ export default function Footer() {
           <ul className="space-y-2">
             <li><Link href="/" className="inline-block py-1 hover:text-azur">Accueil</Link></li>
             <li><Link href="/annonces" className="inline-block py-1 hover:text-azur">Annonces</Link></li>
+            <li><Link href="/projet" className="inline-block py-1 hover:text-azur">Votre projet</Link></li>
             <li><Link href="/contact" className="inline-block py-1 hover:text-azur">Contact</Link></li>
             <li><Link href="/mentions-legales" className="inline-block py-1 hover:text-azur">Mentions légales</Link></li>
             <li><Link href="/carte" className="inline-block py-1 hover:text-azur">Carte de visite</Link></li>

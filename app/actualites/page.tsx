@@ -4,7 +4,7 @@ import Link from "next/link";
 import Reveal from "@/components/da/Reveal";
 import Surface from "@/components/da/Surface";
 import { TraceIsobathe } from "@/components/da/Isobathes";
-import { getActualites } from "@/lib/sources/corpus";
+import { getActualitesPubliees } from "@/lib/sources/corpus";
 
 export const metadata: Metadata = {
   title: "Actualités",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default function Actualites() {
-  const actus = getActualites();
+  const actus = getActualitesPubliees();
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="text-display-l font-bold text-marine md:text-display-xl">Actualités</h1>

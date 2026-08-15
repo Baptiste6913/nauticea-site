@@ -158,6 +158,26 @@ interaction ou entrée de viewport, sauf la dérive du hero. Le kill
 switch global `prefers-reduced-motion` de `globals.css` reste la
 garantie de dernier ressort.
 
+## Polarité inversée, décision client du 15/08
+
+La carte marine reprend son sens d'origine : de l'encre bleue sur
+papier clair. Le concept, les isobathes, le relief, le registre sonde,
+les cartes et la typographie survivent intégralement ; seule la
+polarité change.
+
+- Fond des pages : blanc et écume très claire. Encre : marine profond.
+- Filigrane d'isobathes : marine à 4-8 % d'opacité (hero, carte de
+  visite), dérive lente en CSS coupée par reduced-motion.
+- Touches bleues : boutons et liens (azur-2), badges d'état (marine),
+  ligne de flottaison, bandes d'isobathes de séparation (azur-2).
+- Le footer reste en abysse : unique ancrage sombre du site.
+- L'en-tête passe en clair (blanc, encre marine, actif azur-2).
+- La scène WebGL du hero est retirée : un relief lumineux sous photo
+  n'a pas de sens sur papier clair. Le hero devient un carrousel des
+  photos à la une (photo phare en tête, LCP), titre centré au-dessus.
+- Rôles inchangés pour `rase` (filets, jamais en aplat) et `sable`
+  (flottaison des prix).
+
 ## Rollout session B (application page par page)
 
 - Listes d'annonces, catégories, stock neuf, occasions : cartes

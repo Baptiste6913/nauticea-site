@@ -6,11 +6,15 @@ type Statut = "repos" | "envoi" | "ok" | "erreur";
 
 export default function ContactForm({ annonce }: { annonce?: string }) {
   const [statut, setStatut] = useState<Statut>("repos");
+  const [monteA] = useState(() => Date.now());
 
   async function envoyer(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setStatut("envoi");
-    const donnees = Object.fromEntries(new FormData(e.currentTarget));
+    const donnees = {
+      ...Object.fromEntries(new FormData(e.currentTarget)),
+      horodatage: String(monteA),
+    };
     try {
       const rep = await fetch("/api/contact", {
         method: "POST",

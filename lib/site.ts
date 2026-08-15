@@ -15,8 +15,9 @@ export const SITE = {
   telephoneMobileHref: "+33612988661",
   siret: "42952328500030",
   responsable: "Bruno BOUAULT",
-  // Aucune adresse email publique dans le corpus : a_confirmer.
-  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "a_confirmer",
+  // Adresse confirmée par le client (whois + usage réel, GO du 14/08) :
+  // le mode mailto fonctionne dès le merge, sans variable d'env.
+  email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "contact@nauticeayachting.fr",
   reseaux: {
     facebook: "https://www.facebook.com/nauticea/",
     instagram: "https://www.instagram.com/nauticeayachting/",

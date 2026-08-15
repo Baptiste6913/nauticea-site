@@ -169,8 +169,11 @@ export default async function DetailAnnonce({ params }: Props) {
           )}
           <Surface niveau="flotte" className="mt-8 rounded-lg bg-ecume p-5">
             <h2 className="text-display-s font-semibold text-marine">
-              {typoFr(`Contact : ${SITE.responsable}`)}
+              {typoFr("Ce bateau vous intéresse ?")}
             </h2>
+            <p className="mt-1 text-sm text-encre/80">
+              {typoFr(`Contact : ${SITE.responsable}`)}
+            </p>
             <p className="mt-2 text-sm">
               <a
                 href={`tel:${SITE.telephoneMobileHref}`}
@@ -179,12 +182,20 @@ export default async function DetailAnnonce({ params }: Props) {
                 {SITE.telephoneMobile}
               </a>
             </p>
-            <Link
-              href={`/contact?annonce=${boat.slug}`}
-              className="mt-3 inline-block rounded bg-marine px-4 py-2 text-sm font-semibold text-white hover:bg-marine-2"
-            >
-              Demander plus d&apos;informations
-            </Link>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Link
+                href={`/projet?annonce=${boat.slug}`}
+                className="inline-block rounded bg-azur-2 px-4 py-2 text-sm font-semibold text-white hover:bg-marine"
+              >
+                Décrire votre projet
+              </Link>
+              <Link
+                href={`/contact?annonce=${boat.slug}`}
+                className="inline-block rounded border border-marine px-4 py-2 text-sm font-semibold text-marine hover:bg-white"
+              >
+                Poser une question
+              </Link>
+            </div>
           </Surface>
         </div>
       </div>
