@@ -19,6 +19,9 @@
   /* Tokens DA (design/DA.md) : sombre profond et lumière rasante. */
   --color-abysse: #060f26;
   --color-rase: #e9bd6a;
+  /* Fond réel du fichier logo, mesuré au pixel (8 points de contrôle) :
+     le header le reprend pour une jointure invisible. */
+  --color-pavillon: #001647;
 
   --font-sans: var(--font-corps), system-ui, "Segoe UI", Arial, sans-serif;
   --font-display: var(--font-titres), var(--font-corps), system-ui, sans-serif;

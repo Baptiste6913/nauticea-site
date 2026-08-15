@@ -35,6 +35,7 @@ Base existante approfondie, jamais remplacée :
 | `azur-2` | `#166288` | liens, traits d'isobathes sur clair, contraste AA (existant) |
 | `ecume` | `#f2f5f9` | fonds clairs, papier de la carte (existant) |
 | `rase` | `#e9bd6a` | lumière chaude naturelle de soleil rasant : filets, sondes actives, crêtes du relief 3D ; jamais en aplat large, jamais terracotta |
+| `pavillon` | `#001647` | fond réel du fichier logo, mesuré au pixel : fond du header et theme-color, jointure invisible autour du logo |
 
 `encre #1c2434` (texte courant) reste le token de texte. `sable
 #b98a5a` (hérité, écho des coques cuivre du corpus) garde un seul rôle

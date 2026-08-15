@@ -36,6 +36,11 @@ const sondes = IBM_Plex_Mono({
   preload: false,
 });
 
+// Barre système mobile alignée sur le fond du header (token pavillon).
+export const viewport = {
+  themeColor: "#001647",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
