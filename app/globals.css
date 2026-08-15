@@ -124,6 +124,9 @@ a:focus-visible .trace-isobathe {
 
 html {
   scroll-behavior: smooth;
+  /* Le header sticky ne recouvre jamais une cible de defilement
+     (chargement direct avec ancre, lien d'evitement, hash). */
+  scroll-padding-top: 6.5rem;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Isobathes from "@/components/da/Isobathes";
 import { SITE } from "@/lib/site";
+import { actualitesActives } from "@/lib/contenu";
 import "./globals.css";
 
 // Corps humaniste (retouche GO session B) : Fira Sans, lignée FF Meta,
@@ -89,7 +90,7 @@ export default function RootLayout({
             className="h-full w-full"
           />
         </div>
-        <Header />
+        <Header avecActualites={actualitesActives()} />
         <main id="contenu" className="min-h-[60vh]">
           {children}
         </main>

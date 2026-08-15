@@ -207,7 +207,7 @@ try {
     ["bretweb", /bretweb/i],
     ["ancien site (assets)", /nauticeayachting\.fr\/(images|Video|templates|media)/],
   ];
-  const DOSSIERS_SOURCES = ["app", "components", "lib", "scripts", "docs", "design"];
+  const DOSSIERS_SOURCES = ["app", "components", "lib", "scripts", "docs", "design", "content"];
   const FICHIERS_RACINE = ["README.md", ".env.example", "next.config.ts", "package.json"];
   function fichiersDe(dossier) {
     const resultat = [];
@@ -263,7 +263,7 @@ try {
   }
 
   // ---------- 7. Pages masquées : servies mais hors sitemap et nav ----------
-  const MASQUEES = ["/annonces/voiliers", "/actualites/sealine-s430-la-visite", "/actualites/sealine-c335"];
+  const MASQUEES = ["/annonces/voiliers", "/actualites", "/actualites/sealine-c-390", "/actualites/nouveau-sealine-s390", "/actualites/sealine-s430-la-visite", "/actualites/sealine-c335"];
   for (const route of MASQUEES) {
     if (urls.includes(route)) {
       echec("masquage", `${route} figure au sitemap`);

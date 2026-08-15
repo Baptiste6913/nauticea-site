@@ -4,6 +4,7 @@ import {
   getBoats,
   getCategoriesAvecStock,
 } from "@/lib/sources/corpus";
+import { actualitesActives } from "@/lib/contenu";
 import { SITE } from "@/lib/site";
 
 // Sitemap aligné sur l'inventaire réel (directive finale W2) : les
@@ -14,7 +15,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const statiques = [
     "",
     "/a-propos",
-    "/actualites",
     "/marques",
     "/annonces",
     ...categories.map((c) => `/annonces/${c}`),
@@ -43,11 +43,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
-  const actus = getActualitesPubliees().map((a) => ({
-    url: `${SITE.url}/actualites/${a.slug}`,
-    changeFrequency: "monthly" as const,
-    priority: 0.5,
-  }));
+  // Actualités : hors sitemap tant que la section n'est pas réactivée
+  // (nettoyage du 15/08) ; URLs servies, cibles de 301.
+  const actus = actualitesActives()
+    ? [
+        {
+          url: `${SITE.url}/actualites`,
+          changeFrequency: "weekly" as const,
+          priority: 0.6,
+        },
+        ...getActualitesPubliees().map((a) => ({
+          url: `${SITE.url}/actualites/${a.slug}`,
+          changeFrequency: "monthly" as const,
+          priority: 0.5,
+        })),
+      ]
+    : [];
 
   return [...pages, ...annonces, ...actus];
 }
