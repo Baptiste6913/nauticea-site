@@ -16,11 +16,12 @@ export const metadata: Metadata = {
 
 export default function Carte() {
   return (
-    <div className="relative overflow-hidden bg-marine">
+    <div className="relative overflow-hidden bg-ecume">
       <Isobathes
         graine={11}
         variante="fond"
-        opacite={0.25}
+        couleur="var(--color-marine)"
+        opacite={0.07}
         className="absolute inset-0 h-full w-full"
       />
       <Surface

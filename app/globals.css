@@ -79,6 +79,22 @@ h3 {
   }
 }
 
+/* Dérive lente du filigrane bathymétrique (polarité claire) : coupée
+   par le kill switch prefers-reduced-motion plus haut. */
+@media (prefers-reduced-motion: no-preference) {
+  .derive-lente {
+    animation: derive-filigrane 80s ease-in-out infinite alternate;
+  }
+  @keyframes derive-filigrane {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-1.5%) scale(1.03);
+    }
+  }
+}
+
 /* Trace isobathe sous les titres de cartes : se dessine au hover. */
 .trace-isobathe {
   stroke-dasharray: 260;

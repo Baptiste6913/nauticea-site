@@ -21,7 +21,7 @@ export default function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 bg-marine text-white shadow-md">
+    <header className="sticky top-0 z-40 border-b border-encre/10 bg-white text-marine shadow-affleure">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="shrink-0" aria-label="Nauticea Yachting, accueil">
           <Image
@@ -42,8 +42,8 @@ export default function Header() {
                   <Link
                     href={item.href}
                     aria-current={actif ? "page" : undefined}
-                    className={`rounded px-3 py-2 text-sm font-medium transition-colors hover:bg-marine-2 hover:text-azur ${
-                      actif ? "text-azur" : "text-white"
+                    className={`rounded px-3 py-2 text-sm font-medium transition-colors hover:bg-ecume hover:text-azur-2 ${
+                      actif ? "text-azur-2" : "text-marine"
                     }`}
                   >
                     {item.label}
@@ -58,20 +58,20 @@ export default function Header() {
           onClick={() => setOuvert(!ouvert)}
           aria-expanded={ouvert}
           aria-controls="menu-mobile"
-          className="rounded border border-white/30 px-3 py-2 text-sm lg:hidden"
+          className="rounded border border-encre/20 px-3 py-2 text-sm lg:hidden"
         >
           Menu
         </button>
       </div>
       {ouvert && (
         <nav id="menu-mobile" aria-label="Navigation mobile" className="lg:hidden">
-          <ul className="border-t border-white/10 bg-marine px-4 pb-4">
+          <ul className="border-t border-encre/10 bg-white px-4 pb-4">
             {NAV.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   onClick={() => setOuvert(false)}
-                  className="block border-b border-white/10 py-3 text-sm font-medium hover:text-azur"
+                  className="block border-b border-encre/10 py-3 text-sm font-medium hover:text-azur-2"
                 >
                   {item.label}
                 </Link>

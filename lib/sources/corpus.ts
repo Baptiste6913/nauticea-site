@@ -80,3 +80,19 @@ export function getActualites(): Actualite[] {
 export function getActualiteBySlug(slug: string): Actualite | undefined {
   return getActualites().find((a) => a.slug === slug);
 }
+
+// Actualités avec contenu réel (texte ou image) : les seules listées et
+// présentes au sitemap. Les autres restent servies par leur URL (cibles
+// de redirections 301) avec un état vide propre, hors navigation.
+export function actualiteAContenu(a: Actualite): boolean {
+  return a.corps.trim().length > 0 || a.images.length > 0;
+}
+
+export function getActualitesPubliees(): Actualite[] {
+  return getActualites().filter(actualiteAContenu);
+}
+
+// Catégories d'annonces avec stock : les seules listées au sitemap.
+export function getCategoriesAvecStock(): string[] {
+  return [...new Set(getBoats().map((b) => b.categorie))];
+}

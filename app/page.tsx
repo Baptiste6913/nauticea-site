@@ -1,42 +1,23 @@
 import Image from "next/image";
 import Link from "next/link";
 import BoatCardDA from "@/components/da/BoatCardDA";
+import CarrouselHero from "@/components/da/CarrouselHero";
 import Isobathes from "@/components/da/Isobathes";
-import ReliefRade from "@/components/da/ReliefRade";
 import Reveal from "@/components/da/Reveal";
 import Surface from "@/components/da/Surface";
 import { getBoats, getPages } from "@/lib/sources/corpus";
 import { SITE } from "@/lib/site";
 import { typoFr } from "@/lib/format";
 
-// Graine du champ bathymétrique du hero (partagée SVG poster / shader).
+// Graine du filigrane bathymétrique du hero.
 const GRAINE_RADE = 43;
 
-// Les quatre photos du hero historique : la C390 devient l'image
-// signature, les trois autres restent à la une (aucune photo perdue).
-const PHOTO_PHARE = {
-  src: "/site/slider/sealine-c390-3.jpg",
-  alt: "Sealine C390 en navigation",
-};
-const A_LA_UNE = [
-  {
-    src: "/site/slider/new_Sealine_S390-exterior.jpg",
-    alt: "Sealine S390, extérieur",
-    href: "/actualites/nouveau-sealine-s390",
-    legende: "Sealine S390",
-  },
-  {
-    src: "/site/slider/rick-280.jpg",
-    alt: "RYCK 280 en navigation",
-    href: "/marques",
-    legende: "RYCK 280",
-  },
-  {
-    src: "/site/slider/sealine-c335-photo-exterieur-2021.jpg",
-    alt: "Sealine C335, extérieur",
-    href: "/actualites/sealine-c335",
-    legende: "Sealine C335",
-  },
+// Les quatre photos à la une du corpus, photo phare en tête (LCP).
+const DIAPOS = [
+  { src: "/site/slider/sealine-c390-3.jpg", alt: "Sealine C390 en navigation" },
+  { src: "/site/slider/new_Sealine_S390-exterior.jpg", alt: "Sealine S390, extérieur" },
+  { src: "/site/slider/rick-280.jpg", alt: "RYCK 280 en navigation" },
+  { src: "/site/slider/sealine-c335-photo-exterieur-2021.jpg", alt: "Sealine C335, extérieur" },
 ];
 
 // Le texte d'accueil du corpus est un bloc unique : on en extrait les
@@ -86,88 +67,52 @@ export default function Accueil() {
           __html: JSON.stringify(JSON_LD_LOCAL_BUSINESS),
         }}
       />
-      {/* Hero : la photo phare en surface, le fond de la rade en relief.
-          Le poster SVG est la version complète ; le canvas ne fait que
-          l'animer quand les conditions le permettent. */}
-      <section className="relative overflow-hidden bg-abysse">
-        <Isobathes
-          graine={GRAINE_RADE}
-          variante="fond"
-          sondes
-          opacite={0.3}
-          className="absolute inset-0 h-full w-full"
-        />
-        <ReliefRade graine={GRAINE_RADE} />
-        <div className="relative mx-auto grid max-w-6xl items-center gap-8 px-4 py-14 md:py-20 lg:grid-cols-[5fr_7fr]">
-          <div>
-            <p className="sonde text-xs uppercase tracking-[0.25em] text-azur">
+      {/* Hero clair (polarité inversée, décision client du 15/08) :
+          filigrane d'isobathes marine, titre centré, carrousel. */}
+      <section className="relative overflow-hidden bg-ecume">
+        <div className="derive-lente absolute inset-0" aria-hidden="true">
+          <Isobathes
+            graine={GRAINE_RADE}
+            variante="fond"
+            couleur="var(--color-marine)"
+            opacite={0.07}
+            sondes
+            className="h-full w-full"
+          />
+        </div>
+        <div className="relative mx-auto max-w-6xl px-4 py-10 md:py-14">
+          <div className="text-center">
+            <p className="sonde text-xs uppercase tracking-[0.25em] text-azur-2">
               Port-Fréjus · Côte d&apos;Azur
             </p>
-            <h1 className="mt-3 text-display-l font-bold text-white md:text-display-xl">
+            <h1 className="mx-auto mt-3 max-w-3xl text-display-l font-bold text-marine md:text-display-xl">
               Yachts Sealine et RYCK chez Nauticea Yachting Fréjus
             </h1>
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
                 href="/annonces"
-                className="rounded bg-azur-2 px-5 py-2.5 font-semibold text-white hover:bg-azur"
+                className="rounded bg-azur-2 px-5 py-2.5 font-semibold text-white hover:bg-marine"
               >
                 Voir les annonces
               </Link>
               <Link
-                href="/contact"
-                className="rounded border border-white/40 px-5 py-2.5 font-semibold text-white hover:border-azur hover:text-azur"
+                href="/projet"
+                className="rounded border border-marine px-5 py-2.5 font-semibold text-marine hover:bg-white"
               >
-                Nous contacter
+                Parler de votre projet
               </Link>
             </div>
           </div>
-          <Surface
-            niveau="domine"
-            className="relative aspect-[3/2] overflow-hidden rounded-lg"
-          >
-            <Image
-              src={PHOTO_PHARE.src}
-              alt={PHOTO_PHARE.alt}
-              fill
-              sizes="(max-width: 1024px) 100vw, 60vw"
-              priority
-              className="object-cover"
-            />
-          </Surface>
+          <div className="mt-8">
+            <CarrouselHero diapos={DIAPOS} />
+          </div>
         </div>
       </section>
-
-      {/* À la une : les trois autres photos du hero historique. */}
-      <Reveal as="section" className="mx-auto max-w-6xl px-4 pt-10">
-        <ul className="grid list-none grid-cols-3 gap-4 p-0 max-md:grid-cols-1">
-          {A_LA_UNE.map((photo) => (
-            <li key={photo.src}>
-              <Link href={photo.href} className="group block">
-                <Surface
-                  niveau="affleure"
-                  className="relative aspect-[16/9] overflow-hidden rounded-lg"
-                >
-                  <Image
-                    src={photo.src}
-                    alt={photo.alt}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-300 motion-safe:group-hover:scale-[1.03]"
-                  />
-                </Surface>
-                <p className="sonde mt-2 text-xs uppercase tracking-widest text-encre/70 group-hover:text-azur-2">
-                  {photo.legende}
-                </p>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </Reveal>
 
       <Reveal as="section" className="mx-auto max-w-6xl px-4 py-12">
         <h2 className="sr-only">Nos marques</h2>
         <div className="grid gap-10 md:grid-cols-2">
-          <Surface as="article" niveau="affleure" className="rounded-lg bg-ecume p-6">
+          <Surface as="article" niveau="affleure" className="rounded-lg bg-white p-6 ring-1 ring-encre/5">
             <Image
               src="/site/logos/sealinelogo550.png"
               alt="Sealine"
@@ -185,7 +130,7 @@ export default function Accueil() {
               Découvrir la gamme Sealine
             </a>
           </Surface>
-          <Surface as="article" niveau="affleure" className="rounded-lg bg-ecume p-6">
+          <Surface as="article" niveau="affleure" className="rounded-lg bg-white p-6 ring-1 ring-encre/5">
             <Image
               src="/site/logos/Logo-Ricknoir.jpg"
               alt="RYCK Yachts"
@@ -211,7 +156,7 @@ export default function Accueil() {
         graine={7}
         variante="separateur"
         couleur="var(--color-azur-2)"
-        opacite={0.4}
+        opacite={0.35}
         className="mx-auto block h-16 w-full max-w-6xl px-4"
       />
 
@@ -230,6 +175,29 @@ export default function Accueil() {
           </div>
         </Reveal>
       </section>
+
+      {/* Appel au formulaire de conversion (directive finale W3). */}
+      <Reveal as="section" className="mx-auto max-w-6xl px-4 py-12">
+        <Surface
+          niveau="flotte"
+          className="rounded-lg bg-white p-8 text-center ring-1 ring-encre/5"
+        >
+          <h2 className="text-display-m font-semibold text-marine">
+            Un projet d&apos;achat ou de vente ?
+          </h2>
+          <p className="mx-auto mt-2 max-w-xl text-encre/80">
+            {typoFr(
+              "Dites-nous ce que vous cherchez en une minute : nous revenons vers vous avec des propositions concrètes."
+            )}
+          </p>
+          <Link
+            href="/projet"
+            className="mt-5 inline-block rounded bg-azur-2 px-6 py-3 font-semibold text-white hover:bg-marine"
+          >
+            Décrire votre projet
+          </Link>
+        </Surface>
+      </Reveal>
     </>
   );
 }
