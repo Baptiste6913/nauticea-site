@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Surface from "@/components/da/Surface";
+import { lireContenu } from "@/lib/contenu";
 import { typoFr } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -10,27 +11,20 @@ export const metadata: Metadata = {
   alternates: { canonical: "/places-de-port" },
 };
 
-// Tableau de la page « Places de port » du site actuel (corpus).
-const PLACES = [
-  { dimensions: "6 m × 2,50 m", port: "Port-Fréjus", amodiation: "2025" },
-  { dimensions: "8 m × 3 m", port: "Port-Fréjus", amodiation: "2025" },
-  { dimensions: "10 m × 3,50 m", port: "Port-Fréjus", amodiation: "2025" },
-  { dimensions: "12 m × 4 m", port: "Port-Fréjus", amodiation: "2025" },
-  { dimensions: "12 m × 8 m (catamaran)", port: "Port-Fréjus", amodiation: "2025" },
-  { dimensions: "15 m × 4,50 m", port: "Port-Fréjus", amodiation: "2025" },
-  { dimensions: "18 m × 10,30 m (catamaran)", port: "Port-Fréjus", amodiation: "2025" },
-  { dimensions: "22 m × 11,40 m (catamaran)", port: "Port-Fréjus", amodiation: "2025" },
-];
-
+// Tableau et textes éditables dans content/places-de-port.md.
 export default function PlacesDePort() {
+  const contenu = lireContenu("places-de-port.md");
+  const places = (contenu.listes.place ?? []).map((ligne) => {
+    const [dimensions, port, amodiation] = ligne.split("|").map((c) => c.trim());
+    return { dimensions, port, amodiation };
+  });
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
       <h1 className="text-display-l font-bold text-marine md:text-display-xl">
-        Places de port à vendre
+        {contenu.meta.titre}
       </h1>
-      <p className="mt-3 text-encre/80">
-        {typoFr("Dimensions en mètres (tolérance longueur 10 %).")}
-      </p>
+      <p className="mt-3 text-encre/80">{typoFr(contenu.meta.intro ?? "")}</p>
       <Surface className="mt-6 overflow-x-auto rounded-lg">
         <table className="w-full border-collapse text-sm">
           <thead>
@@ -41,11 +35,8 @@ export default function PlacesDePort() {
             </tr>
           </thead>
           <tbody>
-            {PLACES.map((p, i) => (
-              <tr
-                key={p.dimensions}
-                className={i % 2 ? "bg-ecume" : "bg-white"}
-              >
+            {places.map((p, i) => (
+              <tr key={p.dimensions} className={i % 2 ? "bg-ecume" : "bg-white"}>
                 <td className="sonde px-4 py-3 font-semibold">{p.dimensions}</td>
                 <td className="px-4 py-3">{p.port}</td>
                 <td className="sonde px-4 py-3">{p.amodiation}</td>
@@ -54,9 +45,11 @@ export default function PlacesDePort() {
           </tbody>
         </table>
       </Surface>
-      <p className="mt-6 leading-relaxed text-encre/80">
-        {typoFr("Pour plus d'informations, merci de nous contacter.")}
-      </p>
+      {contenu.paragraphes.map((p) => (
+        <p key={p.slice(0, 32)} className="mt-6 leading-relaxed text-encre/80">
+          {typoFr(p)}
+        </p>
+      ))}
       <p className="mt-4">
         <Link
           href="/contact"

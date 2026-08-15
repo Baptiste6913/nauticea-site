@@ -7,7 +7,9 @@ import { useState } from "react";
 
 const NAV = [
   { href: "/a-propos", label: "À propos" },
-  { href: "/actualites", label: "Actualités" },
+  // Actualités : réintégrée par la prop avecActualites dès qu'une
+  // actualité datée de 2026 ou plus existe dans content/actualites/.
+  { href: "/actualites", label: "Actualités", optionnel: true },
   { href: "/marques", label: "Nos marques" },
   { href: "/annonces", label: "Annonces" },
   { href: "/stock-neuf", label: "Stock neuf" },
@@ -16,9 +18,14 @@ const NAV = [
   { href: "/contact", label: "Contact" },
 ];
 
-export default function Header() {
+export default function Header({
+  avecActualites = false,
+}: {
+  avecActualites?: boolean;
+}) {
   const [ouvert, setOuvert] = useState(false);
   const pathname = usePathname();
+  const nav = NAV.filter((item) => !item.optionnel || avecActualites);
 
   return (
     // Fond pavillon : la couleur mesurée du fichier logo, jointure
@@ -36,7 +43,7 @@ export default function Header() {
         </Link>
         <nav aria-label="Navigation principale" className="hidden lg:block">
           <ul className="flex items-center gap-1">
-            {NAV.map((item) => {
+            {nav.map((item) => {
               const actif =
                 pathname === item.href || pathname.startsWith(item.href + "/");
               return (
@@ -68,7 +75,7 @@ export default function Header() {
       {ouvert && (
         <nav id="menu-mobile" aria-label="Navigation mobile" className="lg:hidden">
           <ul className="border-t border-white/15 bg-pavillon px-4 pb-4">
-            {NAV.map((item) => (
+            {nav.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
