@@ -16,14 +16,85 @@
   --color-ecume: #f2f5f9;
   --color-encre: #1c2434;
   --color-sable: #b98a5a;
+  /* Tokens DA (design/DA.md) : sombre profond et lumière rasante. */
+  --color-abysse: #060f26;
+  --color-rase: #e9bd6a;
 
   --font-sans: var(--font-corps), system-ui, "Segoe UI", Arial, sans-serif;
   --font-display: var(--font-titres), var(--font-corps), system-ui, sans-serif;
+  --font-mono: var(--font-sondes), ui-monospace, "Cascadia Mono", monospace;
 
   --text-display-xl: 2.5rem;
   --text-display-l: 1.875rem;
   --text-display-m: 1.375rem;
   --text-display-s: 1.125rem;
+
+  /* Échelle de relief DA : ombres teintées marine, jamais gris neutre. */
+  --shadow-affleure: 0 1px 2px rgba(6, 15, 38, 0.1),
+    0 1px 8px rgba(6, 15, 38, 0.06);
+  --shadow-flotte: 0 4px 12px rgba(6, 15, 38, 0.14),
+    0 2px 4px rgba(6, 15, 38, 0.08);
+  --shadow-domine: 0 12px 32px rgba(6, 15, 38, 0.22),
+    0 4px 8px rgba(6, 15, 38, 0.1);
+}
+
+/* Display en Archivo étendu : signalétique portuaire. */
+h1,
+h2,
+h3 {
+  font-variation-settings: "wdth" 125;
+}
+
+/* Registre sondes : toute valeur mesurée ou monétaire. */
+.sonde {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reveals orchestrés par section : masqués seulement si JS est armé
+   (classe posée avant la peinture) et si le mouvement est accepté. */
+@media (prefers-reduced-motion: no-preference) {
+  html.reveal-arme [data-reveal] > * {
+    opacity: 0;
+    transform: translateY(12px);
+    transition:
+      opacity 500ms cubic-bezier(0.22, 1, 0.36, 1),
+      transform 500ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  html.reveal-arme [data-reveal] > :nth-child(2) {
+    transition-delay: 60ms;
+  }
+  html.reveal-arme [data-reveal] > :nth-child(3) {
+    transition-delay: 120ms;
+  }
+  html.reveal-arme [data-reveal] > :nth-child(4) {
+    transition-delay: 180ms;
+  }
+  html.reveal-arme [data-reveal] > :nth-child(n + 5) {
+    transition-delay: 240ms;
+  }
+  html.reveal-arme [data-reveal].est-visible > * {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Trace isobathe sous les titres de cartes : se dessine au hover. */
+.trace-isobathe {
+  stroke-dasharray: 260;
+  stroke-dashoffset: 260;
+  transition: stroke-dashoffset 300ms ease-out, opacity 200ms ease-out;
+  opacity: 0;
+}
+a:hover .trace-isobathe,
+a:focus-visible .trace-isobathe {
+  stroke-dashoffset: 0;
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .trace-isobathe {
+    stroke-dashoffset: 0;
+  }
 }
 
 html {

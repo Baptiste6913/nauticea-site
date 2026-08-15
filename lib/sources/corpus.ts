@@ -21,11 +21,23 @@ function readJson<T>(file: string): T {
   return JSON.parse(fs.readFileSync(path.join(CORPUS_DIR, file), "utf-8")) as T;
 }
 
+// Nettoyage d'artefacts techniques AdsManager par motifs connus (bruit
+// d'export, pas du contenu) : lignes « Catégorie -1 » et assimilées.
+function nettoyerDescription(texte: string): string {
+  return texte
+    .split("\n")
+    .filter((ligne) => !/^Cat[ée]gorie\s+-?\d+\s*$/.test(ligne.trim()))
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 export function getBoats(): Boat[] {
   if (!boatsCache) {
     const raw = readJson<RawBoat[]>("bateaux.json");
     boatsCache = raw.map((b) => ({
       ...b,
+      description: nettoyerDescription(b.description),
       // Les photos sont versionnées dans public/annonces/<slug>/ par
       // scripts/sync-images.mjs ; on référence les copies locales.
       photos: b.photos.map(
@@ -57,6 +69,9 @@ export function getActualites(): Actualite[] {
         const nom = u.split("/").pop() ?? "";
         return `/actualites/images/${nom}`;
       }),
+      // Vidéos exclues de la v1 : hébergées uniquement sur l'ancien site,
+      // qu'on ne référence jamais (site en fin de vie). Texte conservé.
+      videos: [],
     }));
   }
   return actusCache;

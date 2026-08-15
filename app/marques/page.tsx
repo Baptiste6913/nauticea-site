@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Reveal from "@/components/da/Reveal";
+import Surface from "@/components/da/Surface";
 import { SITE } from "@/lib/site";
 import { typoFr } from "@/lib/format";
 
@@ -18,8 +20,8 @@ export default function Marques() {
         Nauticea Yachting est concessionnaire exclusif des marques Sealine et
         RYCK Yachts du groupe Hanse.
       </p>
-      <div className="mt-8 grid gap-8 md:grid-cols-2">
-        <article className="rounded-lg border border-encre/10 p-6">
+      <Reveal className="mt-8 grid gap-8 md:grid-cols-2">
+        <Surface as="article" niveau="affleure" className="rounded-lg border border-encre/10 bg-white p-6">
           <Image
             src="/site/logos/sealinelogo550.png"
             alt="Sealine"
@@ -40,8 +42,8 @@ export default function Marques() {
           >
             Site officiel Sealine
           </a>
-        </article>
-        <article className="rounded-lg border border-encre/10 p-6">
+        </Surface>
+        <Surface as="article" niveau="affleure" className="rounded-lg border border-encre/10 bg-white p-6">
           <Image
             src="/site/logos/Logo-Ricknoir.jpg"
             alt="RYCK Yachts"
@@ -62,8 +64,8 @@ export default function Marques() {
           >
             Site officiel RYCK
           </a>
-        </article>
-      </div>
+        </Surface>
+      </Reveal>
     </div>
   );
 }

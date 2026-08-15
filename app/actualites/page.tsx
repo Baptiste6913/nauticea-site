@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
+import Reveal from "@/components/da/Reveal";
+import Surface from "@/components/da/Surface";
+import { TraceIsobathe } from "@/components/da/Isobathes";
 import { getActualites } from "@/lib/sources/corpus";
 
 export const metadata: Metadata = {
@@ -15,10 +18,10 @@ export default function Actualites() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="text-display-l font-bold text-marine md:text-display-xl">Actualités</h1>
-      <ul className="mt-8 grid list-none gap-6 p-0 sm:grid-cols-2">
+      <Reveal as="section"><ul className="mt-8 grid list-none gap-6 p-0 sm:grid-cols-2">
         {actus.map((a) => (
           <li key={a.slug}>
-            <article className="group h-full overflow-hidden rounded-lg border border-encre/10 bg-white shadow-sm transition-shadow hover:shadow-md">
+            <Surface as="article" niveau="affleure" className="group h-full overflow-hidden rounded-lg border border-encre/10 bg-white transition-[box-shadow,transform] duration-200 hover:shadow-flotte motion-safe:hover:-translate-y-0.5">
               <Link href={`/actualites/${a.slug}`} className="block">
                 <div className="relative aspect-[4/3] bg-ecume">
                   {a.images[0] ? (
@@ -39,14 +42,12 @@ export default function Actualites() {
                     />
                   )}
                 </div>
-                <h2 className="p-4 text-display-s font-semibold text-marine group-hover:text-azur-2">
-                  {a.titre}
-                </h2>
+                <div className="p-4"><h2 className="text-display-s font-semibold text-marine group-hover:text-azur-2">{a.titre}</h2><TraceIsobathe graine={5} /></div>
               </Link>
-            </article>
+            </Surface>
           </li>
         ))}
-      </ul>
+      </ul></Reveal>
     </div>
   );
 }
