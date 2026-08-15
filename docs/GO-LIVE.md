@@ -88,8 +88,8 @@ Vercel > projet > Settings > Environment Variables (Production) :
 - [ ] Le HTML de l'ancien site est déjà sauvegardé dans le repo
       (`corpus-nauticea/raw/` et `corpus-nauticea/raw-mirror/`), les
       photos dans `public/annonces/` : rien à récupérer de plus.
-- [ ] Résilier l'ancien hébergement Joomla (il reste la principale
-      surface d'attaque du domaine tant qu'il est en ligne).
+- [ ] Résilier l'ancien hébergement du site historique (il reste la
+      principale surface d'attaque du domaine tant qu'il est en ligne).
 
 ## 8. Rollback (si problème majeur pendant la bascule)
 

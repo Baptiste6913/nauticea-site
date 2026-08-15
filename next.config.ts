@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import type { NextConfig } from "next";
 
-// Redirections 301 depuis les anciennes URLs Joomla (.html), générées
-// depuis corpus-nauticea/redirects.csv.
+// Redirections 301 depuis les anciennes URLs .html du site historique,
+// générées depuis corpus-nauticea/redirects.csv.
 function lireRedirections() {
   const csv = fs.readFileSync(
     path.join(__dirname, "corpus-nauticea", "redirects.csv"),

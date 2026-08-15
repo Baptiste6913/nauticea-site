@@ -2,7 +2,7 @@
 
 Refonte du site [nauticeayachting.fr](https://www.nauticeayachting.fr)
 (concessionnaire Sealine et RYCK Yachts à Port Fréjus) en Next.js
-App Router, TypeScript et Tailwind, en remplacement du site Joomla.
+App Router, TypeScript et Tailwind, en remplacement du site historique.
 
 ## Lancer en local
 
