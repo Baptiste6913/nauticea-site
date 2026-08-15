@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Reveal from "@/components/da/Reveal";
 import Surface from "@/components/da/Surface";
+import { lireContenu } from "@/lib/contenu";
 import { SITE } from "@/lib/site";
 import { typoFr } from "@/lib/format";
 
@@ -12,14 +13,26 @@ export const metadata: Metadata = {
   alternates: { canonical: "/marques" },
 };
 
+// Textes éditables dans content/marques.md (sections ## par marque).
+function sectionsDepuis(corps: string): Record<string, string> {
+  const sections: Record<string, string> = {};
+  for (const bloc of corps.split(/^## /m).slice(1)) {
+    const saut = bloc.indexOf("\n");
+    sections[bloc.slice(0, saut).trim()] = bloc.slice(saut + 1).trim();
+  }
+  return sections;
+}
+
 export default function Marques() {
+  const contenu = lireContenu("marques.md");
+  const sections = sectionsDepuis(contenu.corps);
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <h1 className="text-display-l font-bold text-marine md:text-display-xl">Nos marques</h1>
-      <p className="mt-3 max-w-2xl text-encre/80">
-        Nauticea Yachting est concessionnaire exclusif des marques Sealine et
-        RYCK Yachts du groupe Hanse.
-      </p>
+      <h1 className="text-display-l font-bold text-marine md:text-display-xl">
+        {contenu.meta.titre}
+      </h1>
+      <p className="mt-3 max-w-2xl text-encre/80">{contenu.meta.intro}</p>
       <Reveal className="mt-8 grid gap-8 md:grid-cols-2">
         <Surface as="article" niveau="affleure" className="rounded-lg border border-encre/10 bg-white p-6">
           <Image
@@ -31,9 +44,7 @@ export default function Marques() {
           />
           <h2 className="mt-4 text-display-m font-semibold text-marine">Sealine</h2>
           <p className="mt-3 leading-relaxed text-encre/90">
-            {typoFr(
-              "SEALINE exploite tous les leviers de l'art de la construction navale pour créer une ambiance lumineuse : grandes surfaces vitrées panoramiques, puits de lumière, fenêtres intégrées à la coque et toits ouvrants électriques."
-            )}
+            {typoFr(sections["Sealine"] ?? "")}
           </p>
           <a
             href={SITE.marques.sealine}
@@ -53,9 +64,7 @@ export default function Marques() {
           />
           <h2 className="mt-4 text-display-m font-semibold text-marine">RYCK Yachts</h2>
           <p className="mt-3 leading-relaxed text-encre/90">
-            {typoFr(
-              "RYCK, la nouvelle et moderne marque de bateaux « made in Germany ». Les bateaux RYCK, d'un design dynamique, garantissent la meilleure qualité et une grande flexibilité pour s'adapter aux besoins de leurs propriétaires."
-            )}
+            {typoFr(sections["RYCK Yachts"] ?? "")}
           </p>
           <a
             href={SITE.marques.ryck}

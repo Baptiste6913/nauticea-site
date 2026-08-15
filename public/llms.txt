@@ -18,5 +18,4 @@ de port.
 - Décrire votre projet d'achat ou de vente : https://www.nauticeayachting.fr/projet
 - Places de port : https://www.nauticeayachting.fr/places-de-port
 - Nos marques : https://www.nauticeayachting.fr/marques
-- Actualités : https://www.nauticeayachting.fr/actualites
 - Contact : https://www.nauticeayachting.fr/contact
