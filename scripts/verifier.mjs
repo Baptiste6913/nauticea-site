@@ -203,6 +203,8 @@ try {
     ["TODO", /\bTODO\b/],
     ["FIXME", /\bFIXME\b/],
     ["lorem", /lorem/i],
+    ["joomla", /joomla/i],
+    ["bretweb", /bretweb/i],
     ["ancien site (assets)", /nauticeayachting\.fr\/(images|Video|templates|media)/],
   ];
   const DOSSIERS_SOURCES = ["app", "components", "lib", "scripts", "docs", "design"];
@@ -247,6 +249,8 @@ try {
     ["lorem", /lorem ipsum/i],
     ["cinq.studio", /cinq\.studio/],
     ["em-dash", /—/],
+    ["joomla", /joomla/i],
+    ["bretweb", /bretweb/i],
     ["ancien site (assets)", /nauticeayachting\.fr\/(images|Video|templates|media)/],
     ["lien interne .html", /href="\/[^"]*\.html"/],
   ];
