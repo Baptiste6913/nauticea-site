@@ -21,7 +21,9 @@ export default function Header() {
   const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-encre/10 bg-white text-marine shadow-affleure">
+    // Fond pavillon : la couleur mesurée du fichier logo, jointure
+    // invisible autour de l'image (design/DA.md, tokens).
+    <header className="sticky top-0 z-40 bg-pavillon text-white shadow-affleure">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
         <Link href="/" className="shrink-0" aria-label="Nauticea Yachting, accueil">
           <Image
@@ -42,8 +44,8 @@ export default function Header() {
                   <Link
                     href={item.href}
                     aria-current={actif ? "page" : undefined}
-                    className={`rounded px-3 py-2 text-sm font-medium transition-colors hover:bg-ecume hover:text-azur-2 ${
-                      actif ? "text-azur-2" : "text-marine"
+                    className={`rounded px-3 py-2 text-sm font-medium transition-colors hover:bg-white/10 hover:text-azur ${
+                      actif ? "text-azur" : "text-white"
                     }`}
                   >
                     {item.label}
@@ -58,20 +60,20 @@ export default function Header() {
           onClick={() => setOuvert(!ouvert)}
           aria-expanded={ouvert}
           aria-controls="menu-mobile"
-          className="rounded border border-encre/20 px-3 py-2 text-sm lg:hidden"
+          className="rounded border border-white/40 px-3 py-2 text-sm text-white lg:hidden"
         >
           Menu
         </button>
       </div>
       {ouvert && (
         <nav id="menu-mobile" aria-label="Navigation mobile" className="lg:hidden">
-          <ul className="border-t border-encre/10 bg-white px-4 pb-4">
+          <ul className="border-t border-white/15 bg-pavillon px-4 pb-4">
             {NAV.map((item) => (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   onClick={() => setOuvert(false)}
-                  className="block border-b border-encre/10 py-3 text-sm font-medium hover:text-azur-2"
+                  className="block border-b border-white/15 py-3 text-sm font-medium text-white hover:text-azur"
                 >
                   {item.label}
                 </Link>
