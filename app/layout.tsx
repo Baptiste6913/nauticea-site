@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Archivo, Fira_Sans, IBM_Plex_Mono } from "next/font/google";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import Isobathes from "@/components/da/Isobathes";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
@@ -72,6 +73,22 @@ export default function RootLayout({
         >
           Aller au contenu
         </a>
+        {/* Fond porteur unique du site : le filigrane d'isobathes,
+            continu, opacité et échelle par tokens (design/DA.md).
+            Fixe : jamais de coupure du motif à une frontière. */}
+        <div
+          aria-hidden="true"
+          className="derive-lente pointer-events-none fixed inset-0 -z-10"
+          style={{ opacity: "var(--filigrane-opacite)" }}
+        >
+          <Isobathes
+            graine={43}
+            variante="fond"
+            couleur="var(--color-marine)"
+            opacite={1}
+            className="h-full w-full"
+          />
+        </div>
         <Header />
         <main id="contenu" className="min-h-[60vh]">
           {children}

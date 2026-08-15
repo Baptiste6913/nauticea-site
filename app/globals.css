@@ -20,8 +20,14 @@
   --color-abysse: #060f26;
   --color-rase: #e9bd6a;
   /* Fond réel du fichier logo, mesuré au pixel (8 points de contrôle) :
-     le header le reprend pour une jointure invisible. */
+     header, footer et theme-color le reprennent, jointure invisible. */
   --color-pavillon: #001647;
+  /* Nuance du pavillon pour le sous-bandeau copyright. */
+  --color-pavillon-2: #001034;
+
+  /* Filigrane d'isobathes : calibrage unique du site entier (fond
+     porteur au layout, cible 4 a 6 % sur fond clair). */
+  --filigrane-opacite: 0.06;
 
   --font-sans: var(--font-corps), system-ui, "Segoe UI", Arial, sans-serif;
   --font-display: var(--font-titres), var(--font-corps), system-ui, sans-serif;

@@ -2,15 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 import BoatCardDA from "@/components/da/BoatCardDA";
 import CarrouselHero from "@/components/da/CarrouselHero";
-import Isobathes from "@/components/da/Isobathes";
 import Reveal from "@/components/da/Reveal";
 import Surface from "@/components/da/Surface";
 import { getBoats, getPages } from "@/lib/sources/corpus";
 import { SITE } from "@/lib/site";
 import { typoFr } from "@/lib/format";
-
-// Graine du filigrane bathymétrique du hero.
-const GRAINE_RADE = 43;
 
 // Les quatre photos à la une du corpus, photo phare en tête (LCP).
 const DIAPOS = [
@@ -67,19 +63,9 @@ export default function Accueil() {
           __html: JSON.stringify(JSON_LD_LOCAL_BUSINESS),
         }}
       />
-      {/* Hero clair (polarité inversée, décision client du 15/08) :
-          filigrane d'isobathes marine, titre centré, carrousel. */}
-      <section className="relative overflow-hidden bg-ecume">
-        <div className="derive-lente absolute inset-0" aria-hidden="true">
-          <Isobathes
-            graine={GRAINE_RADE}
-            variante="fond"
-            couleur="var(--color-marine)"
-            opacite={0.07}
-            sondes
-            className="h-full w-full"
-          />
-        </div>
+      {/* Hero clair : titre centré, carrousel. Le filigrane est porté
+          par le layout (fond unique du site, design/DA.md). */}
+      <section className="relative">
         <div className="relative mx-auto max-w-6xl px-4 py-10 md:py-14">
           <div className="text-center">
             <p className="sonde text-xs uppercase tracking-[0.25em] text-azur-2">
@@ -151,16 +137,7 @@ export default function Accueil() {
         </div>
       </Reveal>
 
-      {/* Un seul séparateur signature par viewport (règle DA.md). */}
-      <Isobathes
-        graine={7}
-        variante="separateur"
-        couleur="var(--color-azur-2)"
-        opacite={0.35}
-        className="mx-auto block h-16 w-full max-w-6xl px-4"
-      />
-
-      <section className="bg-ecume">
+      <section className="bg-ecume/70">
         <Reveal className="mx-auto max-w-6xl px-4 py-12">
           <div className="flex items-baseline justify-between gap-4">
             <h2 className="text-display-l font-bold text-marine">Dernières annonces</h2>

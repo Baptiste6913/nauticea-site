@@ -29,13 +29,13 @@ Base existante approfondie, jamais remplacée :
 
 | Token | Hex | Rôle |
 |---|---|---|
-| `abysse` | `#060f26` | sombre profond : fond du hero, pied de page, plus grande profondeur de la carte |
+| `abysse` | `#060f26` | sombre profond : encre et ombres uniquement, jamais en fond (décision finitions du 15/08) |
 | `marine` | `#0e1a3c` | fond du logo, surfaces sombres (existant) |
 | `azur` | `#35a8e0` | bleu du logo, traits d'isobathes sur sombre, accents (existant) |
 | `azur-2` | `#166288` | liens, traits d'isobathes sur clair, contraste AA (existant) |
 | `ecume` | `#f2f5f9` | fonds clairs, papier de la carte (existant) |
 | `rase` | `#e9bd6a` | lumière chaude naturelle de soleil rasant : filets, sondes actives, crêtes du relief 3D ; jamais en aplat large, jamais terracotta |
-| `pavillon` | `#001647` | fond réel du fichier logo, mesuré au pixel : fond du header et theme-color, jointure invisible autour du logo |
+| `pavillon` | `#001647` | fond réel du fichier logo, mesuré au pixel : l'unique sombre de fond du site (header, footer, theme-color) ; nuance `pavillon-2 #001034` pour le sous-bandeau copyright |
 
 `encre #1c2434` (texte courant) reste le token de texte. `sable
 #b98a5a` (hérité, écho des coques cuivre du corpus) garde un seul rôle
@@ -167,11 +167,17 @@ les cartes et la typographie survivent intégralement ; seule la
 polarité change.
 
 - Fond des pages : blanc et écume très claire. Encre : marine profond.
-- Filigrane d'isobathes : marine à 4-8 % d'opacité (hero, carte de
-  visite), dérive lente en CSS coupée par reduced-motion.
+- Filigrane d'isobathes : calibrage unique du site entier (finitions du
+  15/08). Un seul fond porteur au niveau du layout, fixe et continu,
+  marine à l'opacité du token `--filigrane-opacite` (6 %, cible 4 à
+  6 %), dérive lente en CSS coupée par reduced-motion. Plus aucun
+  filigrane par section, plus aucune coupure du motif à une frontière ;
+  les chiffres de sonde sont absents sur fond clair (seule la trace
+  isobathe de hover survit, en interaction).
 - Touches bleues : boutons et liens (azur-2), badges d'état (marine),
   ligne de flottaison, bandes d'isobathes de séparation (azur-2).
-- Le footer reste en abysse : unique ancrage sombre du site.
+- Le footer est en pavillon : unique ancrage sombre du site (le
+  sous-bandeau copyright en pavillon-2).
 - L'en-tête passe en clair (blanc, encre marine, actif azur-2).
 - La scène WebGL du hero est retirée : un relief lumineux sous photo
   n'a pas de sens sur papier clair. Le hero devient un carrousel des

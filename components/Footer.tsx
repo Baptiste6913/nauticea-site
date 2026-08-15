@@ -1,23 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
-import Isobathes from "@/components/da/Isobathes";
 import { SITE } from "@/lib/site";
 import { typoFr } from "@/lib/format";
 
 export default function Footer() {
   return (
-    <footer className="relative overflow-hidden bg-abysse text-white">
-      {/* Bande d'isobathes du pied de page (design/DA.md) : niveau 0,
-          sous les marges, jamais sous le texte courant. */}
-      <Isobathes
-        graine={19}
-        variante="separateur"
-        couleur="var(--color-azur)"
-        opacite={0.25}
-        sondes
-        className="absolute inset-x-0 top-0 h-24 w-full"
-      />
-      <div className="relative mx-auto grid max-w-6xl gap-8 px-4 pb-10 pt-16 md:grid-cols-3">
+    // Un seul sombre en fond : le pavillon (couleur du logo, design/DA.md).
+    <footer className="bg-pavillon text-white">
+      <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-3">
         <div>
           <h2 className="text-display-s font-semibold">{SITE.nom}</h2>
           <p className="mt-3 text-sm leading-relaxed text-white/80">
@@ -76,7 +66,7 @@ export default function Footer() {
           />
         </div>
       </div>
-      <div className="relative border-t border-white/10 py-4 text-center text-xs text-white/60">
+      <div className="bg-pavillon-2 py-4 text-center text-xs text-white/70">
         <p>Copyright © 2026 Nauticea Yachting. Tous droits réservés</p>
       </div>
     </footer>
