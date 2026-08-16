@@ -6,15 +6,15 @@
 // mobile et crawler) ne rencontre qu'un mur de connexion, sans
 // contradiction (aucune trace d'un autre détenteur).
 //
-// Instagram : reste à null (audit du 16/08, docs/audit-reseaux.md) :
-// invérifiable de l'extérieur (redirection login, 429) et détenteur du
-// handle inconnu. Seule la confirmation du client réactive : remplacer
-// null par l'URL confirmée puis `npm run verifier` ; le footer, la page
-// contact et le JSON-LD les reprennent seuls.
+// Instagram : réactivé le 16/08 sur vérification client (capture de
+// l'app : compte nauticeayachting, « Bruno Bouault », concessionnaire
+// Sealine et Ryck, lien vers nauticeayachting.fr, 67 publications).
+// Invérifiable de l'extérieur (redirection login, 429) : la capture
+// client fait foi, docs/audit-reseaux.md garde l'historique.
 
 export const RESEAUX: { facebook: string | null; instagram: string | null } = {
   facebook: "https://www.facebook.com/nauticea/",
-  instagram: null,
+  instagram: "https://www.instagram.com/nauticeayachting/",
 };
 
 export function reseauxActifs(): Array<{ nom: string; url: string }> {
