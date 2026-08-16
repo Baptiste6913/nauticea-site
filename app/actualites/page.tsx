@@ -4,8 +4,8 @@ import Link from "next/link";
 import Reveal from "@/components/da/Reveal";
 import Surface from "@/components/da/Surface";
 import { TraceIsobathe } from "@/components/da/Isobathes";
-import { getActualitesPubliees } from "@/lib/sources/corpus";
 import { lireActualitesContenu } from "@/lib/contenu";
+import { formatDateFr, typoFr } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Actualités",
@@ -15,26 +15,21 @@ export const metadata: Metadata = {
 };
 
 export default function Actualites() {
-  // Nouvelles actus éditoriales (content/actualites/) en tête, puis
-  // les actus historiques du corpus. En cas de slug identique, la
-  // version éditoriale masque la version corpus (même règle que la
-  // page détail).
-  const editoriales = lireActualitesContenu();
-  const slugsEditoriaux = new Set(editoriales.map((a) => a.slug));
-  const actus = [
-    ...editoriales.map((a) => ({
-      slug: a.slug,
-      titre: a.titre,
-      images: a.image ? [a.image] : [],
-    })),
-    ...getActualitesPubliees()
-      .filter((a) => !slugsEditoriaux.has(a.slug))
-      .map((a) => ({
+  // La liste n'affiche que les actus éditoriales de 2026 et plus
+  // (micro-session actu Cannes) : les anciennes du corpus (2022)
+  // restent servies par leur URL, cibles de 301, mais hors liste et
+  // hors sitemap.
+  const actus = lireActualitesContenu()
+    .filter((a) => Number(a.date.slice(0, 4)) >= 2026)
+    .map((a) => {
+      const vignette = a.image ?? a.og_image;
+      return {
         slug: a.slug,
         titre: a.titre,
-        images: a.images,
-      })),
-  ];
+        date: a.date,
+        images: vignette ? [vignette] : [],
+      };
+    });
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="text-display-l font-bold text-marine md:text-display-xl">Actualités</h1>
@@ -45,9 +40,10 @@ export default function Actualites() {
               <Link href={`/actualites/${a.slug}`} className="block">
                 <div className="relative aspect-[4/3] bg-ecume">
                   {a.images[0] ? (
+                    /* alt vide : le titre du lien est déjà porté par le h2. */
                     <Image
                       src={a.images[0]}
-                      alt={a.titre}
+                      alt=""
                       fill
                       sizes="(max-width: 640px) 100vw, 50vw"
                       className="object-cover"
@@ -62,7 +58,15 @@ export default function Actualites() {
                     />
                   )}
                 </div>
-                <div className="p-4"><h2 className="text-display-s font-semibold text-marine group-hover:text-azur-2">{a.titre}</h2><TraceIsobathe graine={5} /></div>
+                <div className="p-4">
+                  {a.date && (
+                    <p className="sonde text-xs uppercase tracking-widest text-encre/70">
+                      {formatDateFr(a.date)}
+                    </p>
+                  )}
+                  <h2 className="mt-1 text-display-s font-semibold text-marine group-hover:text-azur-2">{typoFr(a.titre)}</h2>
+                  <TraceIsobathe graine={5} />
+                </div>
               </Link>
             </Surface>
           </li>

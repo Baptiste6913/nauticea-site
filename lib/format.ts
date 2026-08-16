@@ -25,6 +25,31 @@ export function formatLongueur(metres: string): string {
   return `${metres.replace(".", ",")}${FINE}m`;
 }
 
+const MOIS_FR = [
+  "janvier",
+  "février",
+  "mars",
+  "avril",
+  "mai",
+  "juin",
+  "juillet",
+  "août",
+  "septembre",
+  "octobre",
+  "novembre",
+  "décembre",
+];
+
+// Date AAAA-MM-JJ en toutes lettres françaises ; entrée inattendue
+// rendue telle quelle.
+export function formatDateFr(iso: string): string {
+  const [annee, mois, jour] = iso.split("-").map(Number);
+  if (!annee || !mois || mois > 12 || !jour) {
+    return iso;
+  }
+  return `${jour === 1 ? "1er" : jour} ${MOIS_FR[mois - 1]} ${annee}`;
+}
+
 // Valeur de caractéristique : virgule décimale française pour les
 // nombres, texte inchangé sinon.
 export function formatValeurSpec(valeur: string): string {
