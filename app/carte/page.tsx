@@ -36,18 +36,21 @@ export default function Carte() {
         <br />
         {SITE.adresse.codePostal} {SITE.adresse.ville}
       </p>
-      <div className="mt-6 flex w-full flex-col gap-3">
-        <a
-          href={`tel:${SITE.telephoneMobileHref}`}
-          className="sonde rounded bg-marine px-5 py-3 font-semibold text-white hover:bg-marine-2"
-        >
-          {typoFr(`${SITE.responsable} : ${SITE.telephoneMobile}`)}
-        </a>
+      <p className="mt-4 text-sm text-encre/80">
+        {typoFr(`Contact : ${SITE.responsable}`)}
+      </p>
+      <div className="mt-4 flex w-full flex-col gap-3">
         <a
           href={`tel:${SITE.telephoneFixeHref}`}
-          className="sonde rounded border border-marine px-5 py-3 font-semibold text-marine hover:bg-ecume"
+          className="sonde rounded bg-marine px-5 py-3 font-semibold text-white hover:bg-marine-2"
         >
           {typoFr(`Bureau : ${SITE.telephoneFixe}`)}
+        </a>
+        <a
+          href={`tel:${SITE.telephoneMobileHref}`}
+          className="sonde rounded border border-marine px-5 py-3 font-semibold text-marine hover:bg-ecume"
+        >
+          {typoFr(`Mobile : ${SITE.telephoneMobile}`)}
         </a>
         {emailDisponible() && (
           <a

@@ -5,7 +5,7 @@ import { getBoats } from "@/lib/sources/corpus";
 export const metadata: Metadata = {
   title: "Annonces bateaux neufs et occasions",
   description:
-    "Toutes les annonces de bateaux moteur, voiliers et catamarans, neufs et occasions, chez Nauticea Yachting à Port Fréjus.",
+    "Toutes les annonces de bateaux moteur et catamarans, neufs et occasions, chez Nauticea Yachting à Port Fréjus, Var, proche Alpes-Maritimes.",
   alternates: { canonical: "/annonces" },
 };
 

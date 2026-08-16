@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Boat } from "@/lib/types";
 import BoatList from "@/components/BoatList";
+import TableauRecapitulatif from "@/components/TableauRecapitulatif";
 import Reveal from "@/components/da/Reveal";
 import { getBoats } from "@/lib/sources/corpus";
 
@@ -27,6 +28,7 @@ export default function PageAnnonces({
   categorieActive = "",
   filtreEtatInitial,
   masquerFiltreEtat,
+  avecTableau = false,
 }: {
   titre: string;
   intro?: string;
@@ -34,6 +36,7 @@ export default function PageAnnonces({
   categorieActive?: string;
   filtreEtatInitial?: "tous" | "neuf" | "occasion";
   masquerFiltreEtat?: boolean;
+  avecTableau?: boolean;
 }) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -64,6 +67,11 @@ export default function PageAnnonces({
           })}
         </ul>
       </nav>
+      {avecTableau && (
+        <section aria-label="Récapitulatif des bateaux" className="mt-8">
+          <TableauRecapitulatif boats={boats} />
+        </section>
+      )}
       <Reveal className="mt-8">
         <BoatList
           boats={boats}

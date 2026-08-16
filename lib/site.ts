@@ -18,10 +18,6 @@ export const SITE = {
   // Adresse confirmée par le client (whois + usage réel, GO du 14/08) :
   // le mode mailto fonctionne dès le merge, sans variable d'env.
   email: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? "contact@nauticeayachting.fr",
-  reseaux: {
-    facebook: "https://www.facebook.com/nauticea/",
-    instagram: "https://www.instagram.com/nauticeayachting/",
-  },
   marques: {
     sealine: "https://www.hanseyachtsag.com/sealine/fr/",
     ryck: "https://www.hanseyachtsag.com/ryck/fr/",

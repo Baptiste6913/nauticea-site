@@ -5,6 +5,7 @@ import CarrouselHero from "@/components/da/CarrouselHero";
 import Reveal from "@/components/da/Reveal";
 import Surface from "@/components/da/Surface";
 import { getBoats, getPages } from "@/lib/sources/corpus";
+import { reseauxActifs } from "@/lib/config/reseaux";
 import { SITE } from "@/lib/site";
 import { typoFr } from "@/lib/format";
 
@@ -47,7 +48,9 @@ const JSON_LD_LOCAL_BUSINESS = {
     addressLocality: SITE.adresse.ville,
     addressCountry: SITE.adresse.pays,
   },
-  sameAs: [SITE.reseaux.facebook, SITE.reseaux.instagram],
+  ...(reseauxActifs().length > 0
+    ? { sameAs: reseauxActifs().map((r) => r.url) }
+    : {}),
 };
 
 export default function Accueil() {
@@ -74,6 +77,9 @@ export default function Accueil() {
             <h1 className="mx-auto mt-3 max-w-3xl text-display-l font-bold text-marine md:text-display-xl">
               Yachts Sealine et RYCK chez Nauticea Yachting Fréjus
             </h1>
+            <p className="mx-auto mt-3 max-w-2xl font-medium text-encre/80">
+              Concessionnaire exclusif Sealine et RYCK pour les départements du Var et des Alpes-Maritimes
+            </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Link
                 href="/annonces"
@@ -110,7 +116,8 @@ export default function Accueil() {
             <p className="mt-3 leading-relaxed text-encre/90">{typoFr(sealine)}</p>
             <a
               href={SITE.marques.sealine}
-              rel="noopener"
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-4 inline-block font-semibold text-azur-2 hover:underline"
             >
               Découvrir la gamme Sealine
@@ -128,7 +135,8 @@ export default function Accueil() {
             <p className="mt-3 leading-relaxed text-encre/90">{typoFr(ryck)}</p>
             <a
               href={SITE.marques.ryck}
-              rel="noopener"
+              target="_blank"
+              rel="noopener noreferrer"
               className="mt-4 inline-block font-semibold text-azur-2 hover:underline"
             >
               Découvrir la gamme RYCK

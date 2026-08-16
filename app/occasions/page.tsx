@@ -17,6 +17,7 @@ export default function Occasions() {
       boats={getBoats().filter((b) => b.etat === "occasion")}
       filtreEtatInitial="occasion"
       masquerFiltreEtat
+      avecTableau
     />
   );
 }
