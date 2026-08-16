@@ -1,16 +1,20 @@
-// Réseaux sociaux : source de vérité unique du site (audit du 16/08,
-// docs/audit-reseaux.md). Les deux URLs historiques (facebook.com/nauticea,
-// instagram.com/nauticeayachting) sont invérifiables depuis l'extérieur
-// (murs de connexion) : retirées de l'affichage en attendant les URLs
-// officielles confirmées par Bruno.
+// Réseaux sociaux : source de vérité unique du site.
 //
-// Réactivation : remplacer null par l'URL confirmée, par exemple
-//   facebook: "https://www.facebook.com/<page-confirmee>/",
-// puis `npm run verifier` ; le footer et le JSON-LD les reprennent seuls.
+// Facebook : réactivé le 16/08 (retours client V3) : page vérifiée par
+// le client (« Nauticea Yachting, Fréjus », 741 mentions J'aime) ; le
+// test technique du même jour (chaîne de redirections, UA desktop,
+// mobile et crawler) ne rencontre qu'un mur de connexion, sans
+// contradiction (aucune trace d'un autre détenteur).
+//
+// Instagram : réactivé le 16/08 sur vérification client (capture de
+// l'app : compte nauticeayachting, « Bruno Bouault », concessionnaire
+// Sealine et Ryck, lien vers nauticeayachting.fr, 67 publications).
+// Invérifiable de l'extérieur (redirection login, 429) : la capture
+// client fait foi, docs/audit-reseaux.md garde l'historique.
 
 export const RESEAUX: { facebook: string | null; instagram: string | null } = {
-  facebook: null,
-  instagram: null,
+  facebook: "https://www.facebook.com/nauticea/",
+  instagram: "https://www.instagram.com/nauticeayachting/",
 };
 
 export function reseauxActifs(): Array<{ nom: string; url: string }> {

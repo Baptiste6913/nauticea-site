@@ -63,8 +63,12 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  // data-scroll-behavior : Next 16 ne neutralise plus le scroll-behavior
+  // smooth CSS pendant les navigations sans cet attribut, ce qui laissait
+  // la page arriver en cours de défilement (retours client V3, bug du
+  // retour accueil en milieu de page).
   return (
-    <html lang="fr">
+    <html lang="fr" data-scroll-behavior="smooth">
       <body
         className={`${corps.variable} ${titres.variable} ${sondes.variable} antialiased`}
       >
