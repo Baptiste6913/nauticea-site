@@ -42,6 +42,42 @@ export function lireContenu(fichier: string): Contenu {
   return { meta, listes, corps: corps.trim(), paragraphes };
 }
 
+export interface ActualiteContenu {
+  slug: string;
+  titre: string;
+  date: string;
+  image?: string;
+  cta_texte?: string;
+  cta_lien?: string;
+  paragraphes: string[];
+}
+
+// Actualités publiées dans content/actualites/ (gabarit _* ignoré),
+// triées par date décroissante. Rendues sur /actualites et
+// /actualites/[slug] dès leur commit.
+export function lireActualitesContenu(): ActualiteContenu[] {
+  const dossier = path.join(DOSSIER, "actualites");
+  if (!fs.existsSync(dossier)) {
+    return [];
+  }
+  return fs
+    .readdirSync(dossier)
+    .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
+    .map((f) => {
+      const c = lireContenu(path.join("actualites", f));
+      return {
+        slug: f.slice(0, -3),
+        titre: c.meta.titre ?? f.slice(0, -3),
+        date: c.meta.date ?? "",
+        image: c.meta.image || undefined,
+        cta_texte: c.meta.cta_texte || undefined,
+        cta_lien: c.meta.cta_lien || undefined,
+        paragraphes: c.paragraphes,
+      };
+    })
+    .sort((a, b) => b.date.localeCompare(a.date));
+}
+
 // La section Actualités réapparaît d'elle-même dans la navigation et le
 // sitemap dès qu'une actualité datée de 2026 ou plus existe dans
 // content/actualites/ (le gabarit _gabarit.md est ignoré).
