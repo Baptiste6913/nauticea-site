@@ -5,6 +5,7 @@ import Reveal from "@/components/da/Reveal";
 import Surface from "@/components/da/Surface";
 import { TraceIsobathe } from "@/components/da/Isobathes";
 import { getActualitesPubliees } from "@/lib/sources/corpus";
+import { lireActualitesContenu } from "@/lib/contenu";
 
 export const metadata: Metadata = {
   title: "Actualités",
@@ -14,7 +15,26 @@ export const metadata: Metadata = {
 };
 
 export default function Actualites() {
-  const actus = getActualitesPubliees();
+  // Nouvelles actus éditoriales (content/actualites/) en tête, puis
+  // les actus historiques du corpus. En cas de slug identique, la
+  // version éditoriale masque la version corpus (même règle que la
+  // page détail).
+  const editoriales = lireActualitesContenu();
+  const slugsEditoriaux = new Set(editoriales.map((a) => a.slug));
+  const actus = [
+    ...editoriales.map((a) => ({
+      slug: a.slug,
+      titre: a.titre,
+      images: a.image ? [a.image] : [],
+    })),
+    ...getActualitesPubliees()
+      .filter((a) => !slugsEditoriaux.has(a.slug))
+      .map((a) => ({
+        slug: a.slug,
+        titre: a.titre,
+        images: a.images,
+      })),
+  ];
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
       <h1 className="text-display-l font-bold text-marine md:text-display-xl">Actualités</h1>

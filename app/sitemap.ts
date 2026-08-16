@@ -4,7 +4,7 @@ import {
   getBoats,
   getCategoriesAvecStock,
 } from "@/lib/sources/corpus";
-import { actualitesActives } from "@/lib/contenu";
+import { actualitesActives, lireActualitesContenu } from "@/lib/contenu";
 import { SITE } from "@/lib/site";
 
 // Sitemap aligné sur l'inventaire réel (directive finale W2) : les
@@ -44,7 +44,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Actualités : hors sitemap tant que la section n'est pas réactivée
-  // (nettoyage du 15/08) ; URLs servies, cibles de 301.
+  // (nettoyage du 15/08) ; URLs servies, cibles de 301. En cas de slug
+  // identique, la version éditoriale masque la version corpus.
+  const editoriales = lireActualitesContenu();
+  const slugsEditoriaux = new Set(editoriales.map((a) => a.slug));
   const actus = actualitesActives()
     ? [
         {
@@ -52,11 +55,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
           changeFrequency: "weekly" as const,
           priority: 0.6,
         },
-        ...getActualitesPubliees().map((a) => ({
+        ...editoriales.map((a) => ({
           url: `${SITE.url}/actualites/${a.slug}`,
           changeFrequency: "monthly" as const,
-          priority: 0.5,
+          priority: 0.6,
         })),
+        ...getActualitesPubliees()
+          .filter((a) => !slugsEditoriaux.has(a.slug))
+          .map((a) => ({
+            url: `${SITE.url}/actualites/${a.slug}`,
+            changeFrequency: "monthly" as const,
+            priority: 0.5,
+          })),
       ]
     : [];
 

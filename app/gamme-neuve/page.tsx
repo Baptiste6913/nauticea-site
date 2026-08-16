@@ -41,14 +41,16 @@ export default function GammeNeuve() {
         </Link>
         <a
           href={SITE.marques.sealine}
-          rel="noopener"
+          target="_blank"
+            rel="noopener noreferrer"
           className="rounded border border-marine px-5 py-2.5 font-semibold text-marine hover:bg-ecume"
         >
           Site Sealine
         </a>
         <a
           href={SITE.marques.ryck}
-          rel="noopener"
+          target="_blank"
+            rel="noopener noreferrer"
           className="rounded border border-marine px-5 py-2.5 font-semibold text-marine hover:bg-ecume"
         >
           Site RYCK

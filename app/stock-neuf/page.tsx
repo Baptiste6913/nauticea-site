@@ -17,6 +17,7 @@ export default function StockNeuf() {
       boats={getBoats().filter((b) => b.etat === "neuf")}
       filtreEtatInitial="neuf"
       masquerFiltreEtat
+      avecTableau
     />
   );
 }

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { SITE } from "@/lib/site";
+import { reseauxActifs } from "@/lib/config/reseaux";
 import { typoFr } from "@/lib/format";
 
 export default function Footer() {
@@ -10,6 +11,9 @@ export default function Footer() {
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-10 md:grid-cols-3">
         <div>
           <h2 className="text-display-s font-semibold">{SITE.nom}</h2>
+          <p className="mt-1 text-sm text-white/80">
+            Concessionnaire exclusif Sealine et RYCK pour les départements du Var et des Alpes-Maritimes
+          </p>
           <p className="mt-3 text-sm leading-relaxed text-white/80">
             {SITE.adresse.rue}
             <br />
@@ -30,14 +34,21 @@ export default function Footer() {
               {typoFr(`Mobile : ${SITE.telephoneMobile}`)}
             </a>
           </p>
-          <p className="mt-3 flex gap-4 text-sm">
-            <a href={SITE.reseaux.facebook} rel="noopener" className="inline-block py-1 hover:text-azur">
-              Facebook
-            </a>
-            <a href={SITE.reseaux.instagram} rel="noopener" className="inline-block py-1 hover:text-azur">
-              Instagram
-            </a>
-          </p>
+          {reseauxActifs().length > 0 && (
+            <p className="mt-3 flex gap-4 text-sm">
+              {reseauxActifs().map((r) => (
+                <a
+                  key={r.nom}
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-block py-1 hover:text-azur"
+                >
+                  {r.nom}
+                </a>
+              ))}
+            </p>
+          )}
         </div>
         <nav aria-label="Liens de bas de page" className="text-sm">
           <ul className="space-y-2">

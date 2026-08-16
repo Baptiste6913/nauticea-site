@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import ContactForm from "@/components/ContactForm";
 import Surface from "@/components/da/Surface";
 import { SITE, emailDisponible } from "@/lib/site";
+import { reseauxActifs } from "@/lib/config/reseaux";
 import { typoFr } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -93,14 +94,21 @@ export default async function Contact({
               {typoFr(`Bureau : ${SITE.telephoneFixe}`)}
             </a>
           </p>
-          <p className="mt-4 flex gap-4 text-sm">
-            <a href={SITE.reseaux.facebook} rel="noopener" className="text-azur-2 hover:underline">
-              Facebook
-            </a>
-            <a href={SITE.reseaux.instagram} rel="noopener" className="text-azur-2 hover:underline">
-              Instagram
-            </a>
-          </p>
+          {reseauxActifs().length > 0 && (
+            <p className="mt-4 flex gap-4 text-sm">
+              {reseauxActifs().map((r) => (
+                <a
+                  key={r.nom}
+                  href={r.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-azur-2 hover:underline"
+                >
+                  {r.nom}
+                </a>
+              ))}
+            </p>
+          )}
         </aside>
       </div>
     </div>

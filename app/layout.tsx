@@ -46,11 +46,11 @@ export const viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: "Nauticea Yachting, bateaux neufs et occasions à Fréjus",
+    default: "Nauticea Yachting, bateaux neufs et occasions : Fréjus, Var et Alpes-Maritimes",
     template: "%s | Nauticea Yachting",
   },
   description:
-    "Concessionnaire Sealine et RYCK Yachts à Port Fréjus. Bateaux moteur neufs et occasions sur la Côte d'Azur : Fréjus, Cannes, Nice, Saint-Raphaël, Saint-Tropez.",
+    "Concessionnaire exclusif Sealine et RYCK pour le Var et les Alpes-Maritimes, à Port Fréjus. Bateaux moteur neufs et occasions : Fréjus, Cannes, Nice, Saint-Raphaël, Saint-Tropez.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
