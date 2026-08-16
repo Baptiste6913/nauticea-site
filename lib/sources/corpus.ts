@@ -81,9 +81,10 @@ export function getActualiteBySlug(slug: string): Actualite | undefined {
   return getActualites().find((a) => a.slug === slug);
 }
 
-// Actualités avec contenu réel (texte ou image) : les seules listées et
-// présentes au sitemap. Les autres restent servies par leur URL (cibles
-// de redirections 301) avec un état vide propre, hors navigation.
+// Actualités du corpus avec contenu réel (texte ou image) : les seules
+// indexables. Depuis l'actu Cannes 2026, toutes les actus du corpus
+// restent servies par leur URL (cibles de redirections 301) mais hors
+// liste et hors sitemap ; celles sans contenu ont un état vide propre.
 export function actualiteAContenu(a: Actualite): boolean {
   return a.corps.trim().length > 0 || a.images.length > 0;
 }

@@ -47,8 +47,10 @@ export interface ActualiteContenu {
   titre: string;
   date: string;
   image?: string;
-  cta_texte?: string;
-  cta_lien?: string;
+  /** Image Open Graph (et vignette de liste à défaut d'image). */
+  og_image?: string;
+  /** Boutons de fin d'article, paires cta_texte / cta_lien répétées. */
+  ctas: { texte: string; lien: string }[];
   paragraphes: string[];
 }
 
@@ -65,17 +67,62 @@ export function lireActualitesContenu(): ActualiteContenu[] {
     .filter((f) => f.endsWith(".md") && !f.startsWith("_"))
     .map((f) => {
       const c = lireContenu(path.join("actualites", f));
+      const textes = c.listes.cta_texte ?? [];
+      const liens = c.listes.cta_lien ?? [];
       return {
         slug: f.slice(0, -3),
         titre: c.meta.titre ?? f.slice(0, -3),
         date: c.meta.date ?? "",
         image: c.meta.image || undefined,
-        cta_texte: c.meta.cta_texte || undefined,
-        cta_lien: c.meta.cta_lien || undefined,
+        og_image: c.meta.og_image || undefined,
+        ctas: textes
+          .map((texte, i) => ({ texte, lien: liens[i] ?? "" }))
+          .filter((cta) => cta.texte && cta.lien),
         paragraphes: c.paragraphes,
       };
     })
     .sort((a, b) => b.date.localeCompare(a.date));
+}
+
+// Dimensions réelles d'une image de public/ (PNG et JPEG), pour donner
+// à next/image le bon ratio des figures insérées dans le corps d'une
+// actualité. Null si le fichier manque ou n'est pas lisible.
+export function dimensionsImagePublique(
+  src: string
+): { width: number; height: number } | null {
+  const fichier = path.join(process.cwd(), "public", src.replace(/^\//, ""));
+  if (!fs.existsSync(fichier)) {
+    return null;
+  }
+  const octets = fs.readFileSync(fichier);
+  // PNG : signature puis IHDR (largeur et hauteur en big-endian).
+  if (octets.length > 24 && octets.readUInt32BE(0) === 0x89504e47) {
+    return { width: octets.readUInt32BE(16), height: octets.readUInt32BE(20) };
+  }
+  // JPEG : balayage des segments jusqu'au SOF.
+  if (octets.length > 4 && octets.readUInt16BE(0) === 0xffd8) {
+    let i = 2;
+    while (i + 9 < octets.length) {
+      if (octets[i] !== 0xff) {
+        return null;
+      }
+      const marqueur = octets[i + 1];
+      if (
+        marqueur >= 0xc0 &&
+        marqueur <= 0xcf &&
+        marqueur !== 0xc4 &&
+        marqueur !== 0xc8 &&
+        marqueur !== 0xcc
+      ) {
+        return {
+          height: octets.readUInt16BE(i + 5),
+          width: octets.readUInt16BE(i + 7),
+        };
+      }
+      i += 2 + octets.readUInt16BE(i + 2);
+    }
+  }
+  return null;
 }
 
 // La section Actualités réapparaît d'elle-même dans la navigation et le
