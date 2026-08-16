@@ -12,10 +12,13 @@ export default function BoatList({
   boats,
   filtreEtatInitial = "tous",
   masquerFiltreEtat = false,
+  messageVide,
 }: {
   boats: Boat[];
   filtreEtatInitial?: FiltreEtat;
   masquerFiltreEtat?: boolean;
+  /** Message d'état vide spécifique (ex. voiliers, décision client). */
+  messageVide?: string;
 }) {
   const [tri, setTri] = useState<Tri>("recentes");
   const [etat, setEtat] = useState<FiltreEtat>(filtreEtatInitial);
@@ -94,14 +97,23 @@ export default function BoatList({
             />
           </svg>
           <p className="mt-4 font-medium text-encre/80">
-            Aucune annonce dans cette sélection pour le moment.
+            {messageVide ?? "Aucune annonce dans cette sélection pour le moment."}
           </p>
-          <Link
-            href="/annonces"
-            className="mt-4 inline-block rounded bg-marine px-5 py-2.5 text-sm font-semibold text-white hover:bg-marine-2"
-          >
-            Voir toutes les annonces
-          </Link>
+          {messageVide ? (
+            <Link
+              href="/contact"
+              className="mt-4 inline-block rounded bg-marine px-5 py-2.5 text-sm font-semibold text-white hover:bg-marine-2"
+            >
+              Nous contacter
+            </Link>
+          ) : (
+            <Link
+              href="/annonces"
+              className="mt-4 inline-block rounded bg-marine px-5 py-2.5 text-sm font-semibold text-white hover:bg-marine-2"
+            >
+              Voir toutes les annonces
+            </Link>
+          )}
         </div>
       ) : (
         <ul className="mt-6 grid list-none gap-6 p-0 sm:grid-cols-2 lg:grid-cols-3">

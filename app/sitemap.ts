@@ -7,7 +7,9 @@ import { SITE } from "@/lib/site";
 // pages sans contenu (catégories sans stock, actualités vides) restent
 // servies par leur URL mais sortent du sitemap et de la navigation.
 export default function sitemap(): MetadataRoute.Sitemap {
-  const categories = getCategoriesAvecStock();
+  // Décision client (retours du 16/08, V2) : Voiliers reste au sitemap
+  // même à stock vide ; Catamaran garde le comportement dynamique.
+  const categories = [...new Set([...getCategoriesAvecStock(), "voiliers"])];
   const statiques = [
     "",
     "/a-propos",

@@ -33,6 +33,9 @@ const CSP = [
   "img-src 'self' data:",
   "font-src 'self'",
   "connect-src 'self'",
+  // Carte Google Maps de /contact, chargée uniquement au clic sur la
+  // façade (retours client 16/08 V2).
+  "frame-src https://www.google.com https://maps.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
