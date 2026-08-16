@@ -9,12 +9,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/annonces/voiliers" },
 };
 
+// Décision client (retours du 16/08, V2) : la catégorie Voiliers reste
+// visible en navigation et au sitemap même à stock vide, avec cet état
+// vide dédié.
 export default function Voiliers() {
   return (
     <PageAnnonces
       titre="Voiliers"
       boats={getBoats().filter((b) => b.categorie === "voiliers")}
       categorieActive="voiliers"
+      messageVide="Aucun voilier disponible actuellement. Contactez-nous."
     />
   );
 }

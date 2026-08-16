@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import CarteFacade from "@/components/CarteFacade";
 import ContactForm from "@/components/ContactForm";
 import Surface from "@/components/da/Surface";
 import { SITE, emailDisponible, itineraireUrl } from "@/lib/site";
@@ -115,14 +116,11 @@ export default async function Contact({
         <h2 id="plan-titre" className="text-display-s font-semibold text-marine">
           Nous trouver dans le port
         </h2>
-        {/* Le plan du port annoté (flèche sur le local) s'insérera ici en
-            figure responsive dès que Bruno l'aura fourni : introuvable dans
-            le corpus comme sur l'ancienne page contact en ligne (16/08). */}
-        <p className="mt-3 leading-relaxed text-encre/80">
-          {typoFr(
-            `${SITE.nom}, ${SITE.adresse.rue}, ${SITE.adresse.codePostal} ${SITE.adresse.ville}.`
-          )}
-        </p>
+        {/* Carte Google Maps en façade (retours client 16/08 V2) :
+            l'iframe ne se charge qu'au clic sur « Afficher la carte ». */}
+        <CarteFacade
+          adresse={`${SITE.nom}, ${SITE.adresse.rue}, ${SITE.adresse.codePostal} ${SITE.adresse.ville}.`}
+        />
         <p className="mt-5">
           <a
             href={itineraireUrl()}

@@ -32,7 +32,13 @@ function valeurDe(boat: Boat, cle: CleTri): number | null {
 }
 
 export default function TableauRecapitulatif({ boats }: { boats: Boat[] }) {
-  const [tri, setTri] = useState<{ cle: CleTri; sens: Sens } | null>(null);
+  // Tri par défaut prix croissant (retours client 16/08 V2) ; les
+  // « Prix sur demande » (prix null) restent en fin de liste quel que
+  // soit le sens du tri (valeurs nulles poussées en queue plus bas).
+  const [tri, setTri] = useState<{ cle: CleTri; sens: Sens } | null>({
+    cle: "prix",
+    sens: "asc",
+  });
 
   const lignes = useMemo(() => {
     if (!tri) {

@@ -264,8 +264,10 @@ try {
 
   // ---------- 7. Pages masquées : servies mais hors sitemap et nav ----------
   // /actualites est revenue au sitemap avec la première actu de 2026 ;
-  // les anciennes actus du corpus (2022) restent servies mais masquées.
-  const MASQUEES = ["/annonces/voiliers", "/actualites/sealine-c-390", "/actualites/nouveau-sealine-s390", "/actualites/sealine-s430-la-visite", "/actualites/sealine-c335"];
+  // /annonces/voiliers est visible au sitemap sur décision client
+  // (retours du 16/08 V2) ; les anciennes actus du corpus (2022)
+  // restent servies mais masquées.
+  const MASQUEES = ["/actualites/sealine-c-390", "/actualites/nouveau-sealine-s390", "/actualites/sealine-s430-la-visite", "/actualites/sealine-c335"];
   for (const route of MASQUEES) {
     if (urls.includes(route)) {
       echec("masquage", `${route} figure au sitemap`);

@@ -15,9 +15,13 @@ const CATEGORIES = [
 // Les catégories sans stock sont masquées de la navigation ; elles
 // réapparaissent d'elles-mêmes si le jeu de données en contient à nouveau.
 // Les routes restent servies (cibles des redirections 301), avec état vide.
+// Exception, décision client (retours du 16/08, V2) : Voiliers reste
+// visible même à stock vide ; ce choix annule le calcul dynamique pour
+// cette seule catégorie. Catamaran garde le comportement dynamique.
 function categoriesDisponibles(): Set<string> {
   const presentes = new Set(getBoats().map((b) => b.categorie as string));
   presentes.add("");
+  presentes.add("voiliers");
   return presentes;
 }
 
@@ -29,6 +33,7 @@ export default function PageAnnonces({
   filtreEtatInitial,
   masquerFiltreEtat,
   avecTableau = false,
+  messageVide,
 }: {
   titre: string;
   intro?: string;
@@ -37,6 +42,8 @@ export default function PageAnnonces({
   filtreEtatInitial?: "tous" | "neuf" | "occasion";
   masquerFiltreEtat?: boolean;
   avecTableau?: boolean;
+  /** Message d'état vide spécifique (ex. voiliers, décision client). */
+  messageVide?: string;
 }) {
   return (
     <div className="mx-auto max-w-6xl px-4 py-10">
@@ -77,6 +84,7 @@ export default function PageAnnonces({
           boats={boats}
           filtreEtatInitial={filtreEtatInitial}
           masquerFiltreEtat={masquerFiltreEtat}
+          messageVide={messageVide}
         />
       </Reveal>
     </div>

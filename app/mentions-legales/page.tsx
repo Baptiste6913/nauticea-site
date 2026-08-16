@@ -57,7 +57,8 @@ const SECTIONS: Section[] = [
   {
     titre: "Cookies",
     lignes: [
-      "Le site ne dépose aucun cookie : ni cookie de suivi, ni mesure d'audience, ni traceur publicitaire.",
+      "Le site ne dépose aucun cookie de lui-même : ni cookie de suivi, ni mesure d'audience, ni traceur publicitaire.",
+      "Sur la page Contact, la carte Google Maps ne se charge qu'après un clic sur « Afficher la carte ». Ce clic charge un contenu de Google (Google Ireland Limited), qui peut alors déposer ses propres cookies, nécessaires au fonctionnement de la carte. Aucun cookie Google n'est déposé avant ce clic.",
     ],
   },
 ];
