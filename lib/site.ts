@@ -27,3 +27,10 @@ export const SITE = {
 export function emailDisponible(): boolean {
   return SITE.email !== "a_confirmer" && SITE.email.includes("@");
 }
+
+// Lien « Itinéraire » Google Maps construit sur l'adresse du corpus
+// (pages /contact et /carte).
+export function itineraireUrl(): string {
+  const destination = `${SITE.adresse.rue}, ${SITE.adresse.codePostal} ${SITE.adresse.ville}`;
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(destination)}`;
+}

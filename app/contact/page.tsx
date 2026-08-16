@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import ContactForm from "@/components/ContactForm";
 import Surface from "@/components/da/Surface";
-import { SITE, emailDisponible } from "@/lib/site";
+import { SITE, emailDisponible, itineraireUrl } from "@/lib/site";
 import { reseauxActifs } from "@/lib/config/reseaux";
 import { typoFr } from "@/lib/format";
 
@@ -111,6 +111,29 @@ export default async function Contact({
           )}
         </aside>
       </div>
+      <section id="plan" aria-labelledby="plan-titre" className="mt-14">
+        <h2 id="plan-titre" className="text-display-s font-semibold text-marine">
+          Nous trouver dans le port
+        </h2>
+        {/* Le plan du port annoté (flèche sur le local) s'insérera ici en
+            figure responsive dès que Bruno l'aura fourni : introuvable dans
+            le corpus comme sur l'ancienne page contact en ligne (16/08). */}
+        <p className="mt-3 leading-relaxed text-encre/80">
+          {typoFr(
+            `${SITE.nom}, ${SITE.adresse.rue}, ${SITE.adresse.codePostal} ${SITE.adresse.ville}.`
+          )}
+        </p>
+        <p className="mt-5">
+          <a
+            href={itineraireUrl()}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-block rounded bg-marine px-5 py-2.5 font-semibold text-white hover:bg-marine-2"
+          >
+            Itinéraire
+          </a>
+        </p>
+      </section>
     </div>
   );
 }
