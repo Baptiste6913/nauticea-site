@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import Surface from "@/components/da/Surface";
-import { SITE, emailDisponible } from "@/lib/site";
+import { SITE, emailDisponible, itineraireUrl } from "@/lib/site";
 import { typoFr } from "@/lib/format";
 
 // Page carte de visite : cible du QR code des cartes imprimées.
@@ -68,6 +68,20 @@ export default function Carte() {
           className="rounded border border-marine px-5 py-3 font-semibold text-marine hover:bg-ecume"
         >
           Formulaire de contact
+        </Link>
+        <a
+          href={itineraireUrl()}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded border border-marine px-5 py-3 font-semibold text-marine hover:bg-ecume"
+        >
+          Itinéraire
+        </a>
+        <Link
+          href="/contact#plan"
+          className="rounded border border-marine px-5 py-3 font-semibold text-marine hover:bg-ecume"
+        >
+          Plan du port
         </Link>
       </div>
       </Surface>
