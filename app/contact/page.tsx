@@ -80,21 +80,27 @@ export default async function Contact({
             <br />
             {SITE.adresse.codePostal} {SITE.adresse.ville}
           </address>
-          <p className="mt-3 text-sm">
-            <a
-              href={`tel:${SITE.telephoneMobileHref}`}
-              className="sonde inline-block py-1 font-semibold text-azur-2 hover:underline"
-            >
-              {typoFr(`Mobile : ${SITE.telephoneMobile}`)}
-            </a>
-            <br />
-            <a
-              href={`tel:${SITE.telephoneFixeHref}`}
-              className="sonde inline-block py-1 font-semibold text-azur-2 hover:underline"
-            >
-              {typoFr(`Bureau : ${SITE.telephoneFixe}`)}
-            </a>
-          </p>
+          {/* Sans formulaire actif, l'encadré « appelez-nous » affiche
+              déjà les deux numéros : on ne les répète pas ici (retour
+              client du 16/08). Ils reviennent dès que le formulaire
+              Resend est actif, pour rester joignable au téléphone. */}
+          {formulaireActif && (
+            <p className="mt-3 text-sm">
+              <a
+                href={`tel:${SITE.telephoneMobileHref}`}
+                className="sonde inline-block py-1 font-semibold text-azur-2 hover:underline"
+              >
+                {typoFr(`Mobile : ${SITE.telephoneMobile}`)}
+              </a>
+              <br />
+              <a
+                href={`tel:${SITE.telephoneFixeHref}`}
+                className="sonde inline-block py-1 font-semibold text-azur-2 hover:underline"
+              >
+                {typoFr(`Bureau : ${SITE.telephoneFixe}`)}
+              </a>
+            </p>
+          )}
           {reseauxActifs().length > 0 && (
             <p className="mt-4 flex gap-4 text-sm">
               {reseauxActifs().map((r) => (
