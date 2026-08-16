@@ -31,14 +31,24 @@ cta_lien: /annonces
 
 - `titre` : le titre affiché.
 - `date` : au format AAAA-MM-JJ. C'est elle qui réveille la section
-  (2026 ou plus).
+  (2026 ou plus ; la liste n'affiche que les actus de 2026 et plus).
 - `image` : chemin de la photo (étape 3), ou ligne supprimée si pas de
   photo.
 - `cta_texte` et `cta_lien` : le bouton en fin d'actu (une fiche
-  bateau, `/annonces`, `/contact`...), lignes supprimables.
+  bateau, `/annonces`, `/contact`...), lignes supprimables. Répéter
+  les deux lignes pour un second bouton.
+- `og_image` (facultatif) : photo utilisée pour le partage sur les
+  réseaux, et comme vignette de liste si `image` est absente.
 
 Écrire ensuite le corps sous le second `---` : un paragraphe par bloc,
-séparés par une ligne vide.
+séparés par une ligne vide. Le premier paragraphe sert de chapô, mis
+en avant en tête d'article. Pour insérer une photo au milieu du texte
+avec sa légende :
+
+```
+![Description de la photo](/actualites/images/nom-du-fichier.jpg)
+Légende affichée sous la photo
+```
 
 ## 3. Ajouter la photo (2 min)
 

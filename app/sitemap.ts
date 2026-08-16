@@ -1,9 +1,5 @@
 import type { MetadataRoute } from "next";
-import {
-  getActualitesPubliees,
-  getBoats,
-  getCategoriesAvecStock,
-} from "@/lib/sources/corpus";
+import { getBoats, getCategoriesAvecStock } from "@/lib/sources/corpus";
 import { actualitesActives, lireActualitesContenu } from "@/lib/contenu";
 import { SITE } from "@/lib/site";
 
@@ -44,10 +40,9 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   // Actualités : hors sitemap tant que la section n'est pas réactivée
-  // (nettoyage du 15/08) ; URLs servies, cibles de 301. En cas de slug
-  // identique, la version éditoriale masque la version corpus.
-  const editoriales = lireActualitesContenu();
-  const slugsEditoriaux = new Set(editoriales.map((a) => a.slug));
+  // (nettoyage du 15/08). Seules les actus éditoriales de 2026 et plus
+  // y figurent : les anciennes du corpus (2022) restent servies par
+  // leur URL, cibles de 301, mais hors liste et hors sitemap.
   const actus = actualitesActives()
     ? [
         {
@@ -55,17 +50,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
           changeFrequency: "weekly" as const,
           priority: 0.6,
         },
-        ...editoriales.map((a) => ({
-          url: `${SITE.url}/actualites/${a.slug}`,
-          changeFrequency: "monthly" as const,
-          priority: 0.6,
-        })),
-        ...getActualitesPubliees()
-          .filter((a) => !slugsEditoriaux.has(a.slug))
+        ...lireActualitesContenu()
+          .filter((a) => Number(a.date.slice(0, 4)) >= 2026)
           .map((a) => ({
             url: `${SITE.url}/actualites/${a.slug}`,
             changeFrequency: "monthly" as const,
-            priority: 0.5,
+            priority: 0.6,
           })),
       ]
     : [];
