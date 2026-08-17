@@ -5,8 +5,9 @@
 // crawl du sitemap + 404, liens internes, images, unicité des title et
 // description, canonicals, JSON-LD, les 48 redirections 301, chaînes
 // interdites dans les sources et le rendu, pages masquées hors sitemap
-// et hors navigation. Exit code non nul au moindre échec ; résultat
-// écrit dans verification.json.
+// et hors navigation, références d'actions GitHub épinglées sur des
+// condensats. Exit code non nul au moindre échec ; résultat écrit dans
+// verification.json.
 
 import { execSync, spawn } from "node:child_process";
 import fs from "node:fs";
@@ -261,6 +262,50 @@ try {
       }
     }
   }
+
+  // ---------- 6c. Actions GitHub épinglées sur des condensats ----------
+  // Une étiquette (@v4) ou une branche (@main) est mobile : son
+  // mainteneur peut la déplacer, ce qui exécuterait un autre code dans
+  // un workflow qui a le droit d'écrire sur le dépôt. Seul un condensat
+  // de commit complet est immuable. Dependabot tient ces condensats à
+  // jour par PR (.github/dependabot.yml).
+  const DOSSIER_WORKFLOWS = path.join(RACINE, ".github", "workflows");
+  let usesVerifies = 0;
+  if (fs.existsSync(DOSSIER_WORKFLOWS)) {
+    for (const nom of fs.readdirSync(DOSSIER_WORKFLOWS).sort()) {
+      if (!/\.ya?ml$/.test(nom)) {
+        continue;
+      }
+      const relatif = path.join(".github", "workflows", nom);
+      const lignes = fs
+        .readFileSync(path.join(DOSSIER_WORKFLOWS, nom), "utf-8")
+        .split("\n");
+      lignes.forEach((ligne, index) => {
+        // Les lignes entièrement en commentaire ne sont pas exécutées.
+        if (/^\s*#/.test(ligne)) {
+          return;
+        }
+        const trouve = ligne.match(/uses:\s*([^\s#]+)/);
+        if (!trouve) {
+          return;
+        }
+        const reference = trouve[1].replace(/^["']|["']$/g, "");
+        usesVerifies += 1;
+        // Action locale du dépôt ou image conteneur : pas de condensat
+        // d'action à épingler.
+        if (reference.startsWith("./") || reference.startsWith("docker://")) {
+          return;
+        }
+        if (!/@[0-9a-f]{40}$/.test(reference)) {
+          echec(
+            "actions-mutables",
+            `${relatif}:${index + 1} référence mutable « ${reference} » : un condensat de commit de 40 caractères hexadécimaux est exigé`
+          );
+        }
+      });
+    }
+  }
+  resume.uses_workflows_verifies = usesVerifies;
 
   // ---------- 7. Pages masquées : servies mais hors sitemap et nav ----------
   // /actualites est revenue au sitemap avec la première actu de 2026 ;

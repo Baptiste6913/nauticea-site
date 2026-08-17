@@ -14,3 +14,25 @@ updates:
       prefix: "Actions"
     labels:
       - "dependances"
+
+  # Dépendances npm : un seul PR hebdomadaire regroupe les montées
+  # mineures et correctives, tandis qu'une montée majeure (rupture
+  # possible) obtient son propre PR, puisqu'elle ne correspond à aucun
+  # groupe déclaré.
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "Dépendances"
+    labels:
+      - "dependances"
+    groups:
+      npm-mineures-et-correctives:
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"
