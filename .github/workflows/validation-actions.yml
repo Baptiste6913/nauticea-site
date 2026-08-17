@@ -1,0 +1,56 @@
+# WORKFLOW TEMPORAIRE, retiré avant la fusion.
+# Objet : prouver sur un vrai runner que les actions montées en version 7
+# fonctionnent pour ce dépôt, avant d'accepter les PR Dependabot.
+# Trois preuves recherchées :
+#   1. checkout v7 s'exécute et laisse les identifiants git en place
+#      (persist-credentials, dont dépend le git push de la Phase B) ;
+#   2. setup-node v7 installe bien Node 22 ;
+#   3. la commande réelle de la Phase B tourne sur ce Node.
+name: Validation temporaire des actions
+on:
+  push:
+    branches:
+      - claude/dependabot-majeures
+jobs:
+  valider:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout (version candidate)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Node (version candidate)
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      - name: Preuve 1, identifiants git conservés par checkout
+        run: |
+          echo "remote configuré :"
+          git remote -v
+          echo "accès en lecture avec les identifiants du checkout :"
+          git ls-remote origin HEAD
+          echo "PREUVE 1 OK : les identifiants git sont exploitables après checkout v7"
+
+      - name: Preuve 2, version de Node réellement installée
+        run: |
+          node --version
+          node -e "if (!process.version.startsWith('v22.')) { throw new Error('Node 22 attendu, obtenu ' + process.version) }"
+          echo "PREUVE 2 OK : setup-node v7 a bien installé Node 22"
+
+      - name: Preuve 3, la commande de la Phase B tourne sur ce Node
+        run: |
+          node --experimental-strip-types scripts/normalise-feed.mts \
+            tests/fixtures/openmarine-minimal.xml /tmp/sortie.json
+          node -e "
+            const b = require('fs').readFileSync('/tmp/sortie.json', 'utf-8');
+            const d = JSON.parse(b);
+            if (d.length !== 2) { throw new Error('2 annonces attendues, obtenu ' + d.length) }
+            if (d[0].photos.length !== 0) { throw new Error('images refusées attendues sans liste blanche') }
+            console.log('sortie conforme :', d.length, 'annonces, 0 photo retenue sans FEED_IMAGE_HOSTS');
+          "
+          echo "PREUVE 3 OK : normalise-feed et le durcissement fonctionnent sur le runner"
+
+      - name: Preuve 4, la suite de tests passe sur ce Node
+        run: npm test
