@@ -1,0 +1,16 @@
+# Suivi des versions des actions GitHub (durcissement du 17/08).
+# Les actions sont épinglées sur des condensats de commit dans les
+# workflows : Dependabot ouvre une PR hebdomadaire quand une nouvelle
+# version paraît, en mettant à jour le condensat et le commentaire de tag.
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "Actions"
+    labels:
+      - "dependances"
