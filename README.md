@@ -19,29 +19,30 @@ Autres commandes :
 ```bash
 npm run build   # build de production (SSG)
 npm start       # sert le build
-npm test        # tests unitaires du parseur Open Marine
+npm test        # tests unitaires : canal PDF, flux, formulaire projet
 npm run lint    # ESLint
 ```
 
 ## Sources de données
 
-- **Phase A (active)** : `lib/sources/corpus.ts` lit `corpus-nauticea/`
-  (annonces `bateaux.json`, pages `pages.json`, actualités
-  `actualites.json`, redirections `redirects.csv`), extrait du site
-  historique. Les photos sont versionnées dans `public/annonces/`.
-- **Phase B (stub, non branché)** : `lib/sources/boatsgroup.ts`, même
-  signature (`getBoats()`), alimenté par le flux XML Open Marine de
-  Boats Group.
+`getBoats()` de `lib/sources/corpus.ts` est le point d'entrée unique des
+pages. Il assemble trois choses :
 
-### Basculer de source (Phase B)
+- **Corpus historique** : `corpus-nauticea/` (annonces `bateaux.json`,
+  pages `pages.json`, actualités `actualites.json`, redirections
+  `redirects.csv`), extrait du site précédent. Photos versionnées dans
+  `public/annonces/`. Ce corpus n'est jamais modifié par le code.
+- **Canal fiche PDF, actif depuis le 17/08** : `content/annonces/<slug>.json`,
+  écrit par l'ingestion d'une fiche PDF BoatWizard déposée dans `ingest/`.
+  Une annonce ingérée remplace celle du corpus au même slug. Chaîne de
+  lecture dans `lib/ingest/`, mode d'emploi humain dans
+  `docs/PUBLIER-BATEAU.md`.
+- **Cycle de vie** : `content/annonces-etats.json`, deux listes de slugs,
+  `vendus` et `retirees`, tenues par le workflow « Gérer une annonce ».
 
-1. Renseigner le secret `FEED_URL` dans GitHub (Settings > Secrets and
-   variables > Actions) : le workflow `.github/workflows/sync-feed.yml`
-   (cron 2 fois par jour, inactif tant que le secret est absent) se met
-   à produire `corpus-nauticea/bateaux-boatsgroup.json`.
-2. Brancher `getBoats()` de `lib/sources/boatsgroup.ts` sur ce JSON.
-3. Dans les pages, remplacer l'import `@/lib/sources/corpus` par
-   `@/lib/sources/boatsgroup` (une ligne par fichier).
+Le flux payant Boats Group est écarté (décision du 17/08). Son parseur
+`lib/sources/boatsgroup.ts` et son workflow `sync-feed.yml` restent en
+place, dormants sans le secret `FEED_URL` : voir `docs/FLUX.md`.
 
 ## Formulaire de contact
 

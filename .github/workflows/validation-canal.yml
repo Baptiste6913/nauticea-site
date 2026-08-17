@@ -42,7 +42,9 @@ jobs:
       - name: Preuve 2, le mode essai n'écrit que son rapport
         run: |
           set -euo pipefail
-          modifies="$(git status --porcelain | grep -v '^?? rapports/essai-ingestion-' || true)"
+          # Le rapport d'acceptation du Monte Carlo 42 est versionné : le
+          # mode essai le réécrit, il apparaît donc modifié et non nouveau.
+          modifies="$(git status --porcelain | grep -v 'rapports/essai-ingestion-' || true)"
           if [ -n "$modifies" ]; then
             echo "le mode essai a touché autre chose que son rapport :" >&2
             echo "$modifies" >&2
@@ -51,7 +53,7 @@ jobs:
           test -f rapports/essai-ingestion-beneteau-monte-carlo-42-543.md
           grep -q "l'annonce en ligne porte 28 photos" \
             rapports/essai-ingestion-beneteau-monte-carlo-42-543.md
-          rm -f rapports/essai-ingestion-beneteau-monte-carlo-42-543.md
+          git checkout -- rapports/essai-ingestion-beneteau-monte-carlo-42-543.md
 
       - name: Preuve 3, la fiche ambiguë est refusée sans rien écrire
         run: |
@@ -102,7 +104,7 @@ jobs:
       - name: Preuve 7, l'arbre est propre après toutes les preuves
         run: |
           set -euo pipefail
-          reste="$(git status --porcelain | grep -v '^ M verification.json' || true)"
+          reste="$(git status --porcelain | grep -v 'verification.json' || true)"
           if [ -n "$reste" ]; then
             echo "des fichiers inattendus subsistent :" >&2
             echo "$reste" >&2

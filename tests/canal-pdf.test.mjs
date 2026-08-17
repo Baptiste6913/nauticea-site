@@ -11,6 +11,7 @@ import {
 } from "../lib/ingest/pdf.ts";
 import {
   A_CONFIRMER,
+  LIBELLES_RECONNUS,
   conditionDepuisFiche,
   lireFichePdf,
   longueurEnMetres,
@@ -253,6 +254,20 @@ test("statut fiscal : lu tel quel, y compris « Non payé »", () => {
     avecPavillon.fiche.caracteristiques["Pavillon d'immatriculation"],
     "France"
   );
+});
+
+test("chaque libellé reconnu est bien présent dans au moins une fiche", () => {
+  // Garde contre un libellé fantôme : la table de correspondance ne doit
+  // décrire que des libellés réellement produits par le générateur.
+  const vus = new Set();
+  for (const nom of TOUTES) {
+    for (const cle of Object.keys(lireFichePdf(fixture(nom)).fiche.caracteristiques)) {
+      vus.add(cle);
+    }
+  }
+  for (const libelle of LIBELLES_RECONNUS) {
+    assert.ok(vus.has(libelle), `libellé « ${libelle} » absent des cinq fiches`);
+  }
 });
 
 // ---------- 3. Ce qui ne doit jamais être importé ----------
