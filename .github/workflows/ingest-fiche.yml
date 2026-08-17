@@ -1,0 +1,189 @@
+# Canal officiel d'alimentation du site : une fiche PDF BoatWizard déposée
+# dans ingest/ devient une annonce, dans une demande de fusion à relire.
+#
+# Convention du dépôt : toute action est épinglée sur un condensat de
+# commit de 40 caractères hexadécimaux, avec le tag en commentaire. Le
+# contrôle 6c de scripts/verifier.mjs refuse une référence mutable.
+name: Ingestion d'une fiche PDF
+
+on:
+  push:
+    paths:
+      - "ingest/*.pdf"
+      - "ingest/*.PDF"
+  # Reprise à la main : sert quand le rapprochement automatique a refusé
+  # de choisir entre deux annonces du même modèle.
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Annonce à mettre à jour, slug après /annonces/ (facultatif)"
+        required: false
+        type: string
+
+# Le dépôt reçoit un commit de branche et une demande de fusion, jamais
+# un commit sur la branche par défaut.
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ingestion-fiche
+  cancel-in-progress: false
+
+jobs:
+  ingerer:
+    # Garde contre la boucle : la branche produite touche elle aussi
+    # ingest/, elle ne doit pas relancer l'ingestion.
+    if: ${{ !startsWith(github.ref_name, 'ingest/') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      - name: Dépendances
+        run: npm ci
+
+      - name: Repérer la fiche à traiter
+        id: fiche
+        run: |
+          set -euo pipefail
+          # Une seule fiche par exécution : la plus ancienne déposée. S'il
+          # y en a plusieurs, les suivantes seront traitées au dépôt
+          # suivant, ce qui garde une demande de fusion par bateau.
+          fiche="$(find ingest -maxdepth 1 -type f \( -iname '*.pdf' \) | sort | head -1 || true)"
+          if [ -z "$fiche" ]; then
+            echo "aucune fiche à la racine de ingest/, rien à faire"
+            echo "trouvee=non" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Le nom du fichier vient d'un dépôt humain : on n'accepte qu'un
+          # jeu de caractères sûr, plutôt que de le faire traverser un
+          # shell tel quel.
+          if ! printf '%s' "$fiche" | grep -Eq '^ingest/[A-Za-z0-9._ -]+\.[Pp][Dd][Ff]$'; then
+            echo "nom de fichier refusé : « $fiche »" >&2
+            echo "renommez la fiche avec des lettres, chiffres, points, tirets et espaces uniquement" >&2
+            exit 1
+          fi
+          echo "fiche trouvée : $fiche"
+          echo "trouvee=oui" >> "$GITHUB_OUTPUT"
+          echo "chemin=$fiche" >> "$GITHUB_OUTPUT"
+
+      - name: Ingérer la fiche
+        id: ingestion
+        if: steps.fiche.outputs.trouvee == 'oui'
+        env:
+          CHEMIN: ${{ steps.fiche.outputs.chemin }}
+          SLUG_IMPOSE: ${{ inputs.slug }}
+        run: |
+          set -euo pipefail
+          if [ -n "${SLUG_IMPOSE:-}" ]; then
+            node --experimental-strip-types scripts/ingest-fiche.mts \
+              "$CHEMIN" --date "$(date -u +%F)" --slug "$SLUG_IMPOSE" \
+              | tee /tmp/ingestion.txt
+          else
+            node --experimental-strip-types scripts/ingest-fiche.mts \
+              "$CHEMIN" --date "$(date -u +%F)" | tee /tmp/ingestion.txt
+          fi
+          # Le script rend des paires clé=valeur : on les reverse telles
+          # quelles dans les sorties de l'étape.
+          cat /tmp/ingestion.txt >> "$GITHUB_OUTPUT"
+
+      - name: Archiver la fiche traitée
+        if: steps.fiche.outputs.trouvee == 'oui'
+        env:
+          CHEMIN: ${{ steps.fiche.outputs.chemin }}
+        run: |
+          set -euo pipefail
+          mkdir -p ingest/archive
+          git mv "$CHEMIN" "ingest/archive/$(basename "$CHEMIN")"
+
+      - name: Tests unitaires
+        if: steps.fiche.outputs.trouvee == 'oui'
+        run: npm test
+
+      - name: Harnais de vérification
+        if: steps.fiche.outputs.trouvee == 'oui'
+        run: npm run verifier
+
+      - name: Committer sur une branche dédiée
+        id: branche
+        if: steps.fiche.outputs.trouvee == 'oui'
+        env:
+          SLUG: ${{ steps.ingestion.outputs.slug }}
+        run: |
+          set -euo pipefail
+          branche="ingest/$SLUG"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branche"
+          git add -A
+          git commit -m "Ingestion de la fiche $SLUG
+
+          Annonce écrite depuis la fiche PDF BoatWizard, photos rapatriées,
+          rapport d'ingestion joint. Tests et harnais passés sur la branche.
+
+          Co-Authored-By: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          # Une fiche redéposée écrase la branche précédente du même
+          # bateau : la fiche la plus récente fait foi.
+          # Le checkout ne rapporte que la référence poussée : sans cette
+          # récupération, la branche distante existante n'aurait pas de
+          # référence de suivi et le bail refuserait le push.
+          if git ls-remote --exit-code --heads origin "$branche" >/dev/null 2>&1; then
+            git fetch origin "$branche:refs/remotes/origin/$branche"
+          fi
+          git push --force-with-lease origin "$branche"
+          echo "nom=$branche" >> "$GITHUB_OUTPUT"
+
+      - name: Ouvrir la demande de fusion
+        if: steps.fiche.outputs.trouvee == 'oui'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCHE: ${{ steps.branche.outputs.nom }}
+          BASE: ${{ github.event.repository.default_branch }}
+          SLUG: ${{ steps.ingestion.outputs.slug }}
+          NOUVELLE: ${{ steps.ingestion.outputs.nouvelle }}
+          RAPPORT: ${{ steps.ingestion.outputs.rapport }}
+        run: |
+          set -euo pipefail
+          titre="Annonce : $SLUG"
+          if [ "$NOUVELLE" = "oui" ]; then
+            titre="Nouvelle annonce : $SLUG"
+          else
+            titre="Mise à jour d'annonce : $SLUG"
+          fi
+          corps="$(cat "$RAPPORT")"
+          corps="$corps
+
+          ---
+          _Demande de fusion ouverte par le workflow d'ingestion des fiches PDF._"
+          # Une demande de fusion peut déjà être ouverte pour ce bateau :
+          # le push a alors suffi à la mettre à jour.
+          existante="$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls?head=${GITHUB_REPOSITORY%%/*}:${BRANCHE}&state=open" \
+            | node -e 'let e="";process.stdin.on("data",d=>e+=d).on("end",()=>{const j=JSON.parse(e);console.log(Array.isArray(j)&&j[0]?j[0].number:"")})')"
+          if [ -n "$existante" ]; then
+            echo "demande de fusion #$existante déjà ouverte, mise à jour par le push"
+            exit 0
+          fi
+          node -e '
+            const [titre, corps, branche, base] = process.argv.slice(1);
+            process.stdout.write(JSON.stringify({ title: titre, body: corps, head: branche, base }));
+          ' "$titre" "$corps" "$BRANCHE" "$BASE" > /tmp/pr.json
+          curl -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls" \
+            -d @/tmp/pr.json > /tmp/pr-reponse.json
+          numero="$(node -e 'const j=require("/tmp/pr-reponse.json");console.log(j.number ?? "")')"
+          if [ -z "$numero" ]; then
+            echo "création de la demande de fusion refusée :"
+            cat /tmp/pr-reponse.json
+            exit 1
+          fi
+          echo "demande de fusion #$numero ouverte sur $BRANCHE"

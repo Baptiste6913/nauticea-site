@@ -1,9 +1,41 @@
-# FLUX : branchement du flux Boats Group (Phase B)
+# FLUX : le flux payant Boats Group, option écartée
 
-Objectif : le stock du site se met à jour tout seul depuis la
-plateforme où Bruno gère déjà ses annonces. Une seule chose manque et
-elle est hors code : l'URL du flux, à demander par Bruno à son contact
-Boats Group.
+## Décision du 17/08 : ce n'est plus le canal du site
+
+Le flux XML Boats Group est payant. La négociation tarifaire n'a pas
+abouti, donc le canal officiel d'alimentation du site est désormais la
+fiche PDF BoatWizard, décrite dans `docs/PUBLIER-BATEAU.md`.
+
+BoatWizard reste la source de vérité et l'outil de diffusion réseau :
+Bruno continue d'y saisir ses bateaux, et il en exporte une fiche PDF
+qu'il dépose dans `ingest/`. Le site se remplit depuis cette fiche.
+
+Ce document reste en place, et le code du flux avec lui, parce que
+l'option peut se rouvrir :
+
+- `lib/sources/boatsgroup.ts` : parseur du format Open Marine, durci le
+  17/08 (liste blanche de devises, liste blanche de domaines d'images,
+  téléchargements bornés), couvert par `tests/durcir-flux.test.mjs`.
+- `.github/workflows/sync-feed.yml` : synchronisation planifiée, dormante
+  tant que le secret `FEED_URL` est absent, donc sans effet aujourd'hui.
+
+Rien à faire pour désactiver quoi que ce soit : sans `FEED_URL`, le
+workflow s'arrête à sa première étape. Les deux canaux ne peuvent pas se
+marcher dessus, car ils n'écrivent pas au même endroit : le flux
+produirait `corpus-nauticea/bateaux-boatsgroup.json`, alors que le canal
+PDF écrit `content/annonces/<slug>.json`.
+
+Si la négociation aboutit un jour, la suite du document donne la marche à
+suivre, telle qu'elle avait été préparée. Avant toute activation, il
+faudra trancher lequel des deux canaux fait foi pour un même bateau : en
+l'état, l'annonce ingérée depuis une fiche PDF est celle que le site
+sert.
+
+## 0. Objectif d'origine (si le flux est réactivé)
+
+Le stock du site se met à jour tout seul depuis la plateforme où Bruno
+gère déjà ses annonces. Une seule chose manque et elle est hors code :
+l'URL du flux, à demander par Bruno à son contact Boats Group.
 
 ## 1. Le message à envoyer par Bruno (prêt à copier)
 

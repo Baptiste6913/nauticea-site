@@ -1,0 +1,130 @@
+# Cycle de vie d'une annonce, déclenché à la main depuis l'onglet Actions.
+#
+# Convention du dépôt : toute action est épinglée sur un condensat de
+# commit de 40 caractères hexadécimaux, avec le tag en commentaire. Le
+# contrôle 6c de scripts/verifier.mjs refuse une référence mutable.
+name: Gérer une annonce
+
+on:
+  workflow_dispatch:
+    inputs:
+      slug:
+        description: "Slug de l'annonce, la fin de son URL après /annonces/"
+        required: true
+        type: string
+      action:
+        description: "Ce qu'il faut faire de l'annonce"
+        required: true
+        type: choice
+        options:
+          - vendu
+          - disponible
+          - retirer
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: cycle-annonce-${{ inputs.slug }}
+  cancel-in-progress: false
+
+jobs:
+  gerer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      - name: Dépendances
+        run: npm ci
+
+      - name: Appliquer l'action
+        id: cycle
+        env:
+          SLUG: ${{ inputs.slug }}
+          ACTION: ${{ inputs.action }}
+        run: |
+          set -euo pipefail
+          # Le slug vient d'une saisie humaine : on le passe en argument,
+          # jamais interpolé dans le script du shell.
+          node --experimental-strip-types scripts/gerer-annonce.mts \
+            "$ACTION" "$SLUG" | tee /tmp/cycle.txt
+          cat /tmp/cycle.txt >> "$GITHUB_OUTPUT"
+
+      - name: Tests unitaires
+        run: npm test
+
+      - name: Harnais de vérification
+        run: npm run verifier
+
+      - name: Committer sur une branche dédiée
+        id: branche
+        env:
+          SLUG: ${{ inputs.slug }}
+          ACTION: ${{ inputs.action }}
+        run: |
+          set -euo pipefail
+          branche="cycle/$ACTION-$SLUG"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$branche"
+          git add -A
+          git commit -m "Cycle de vie : $ACTION sur $SLUG
+
+          Action déclenchée à la main depuis l'onglet Actions. Rapport joint,
+          tests et harnais passés sur la branche.
+
+          Co-Authored-By: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>"
+          # Le checkout ne rapporte que la référence poussée : sans cette
+          # récupération, la branche distante existante n'aurait pas de
+          # référence de suivi et le bail refuserait le push.
+          if git ls-remote --exit-code --heads origin "$branche" >/dev/null 2>&1; then
+            git fetch origin "$branche:refs/remotes/origin/$branche"
+          fi
+          git push --force-with-lease origin "$branche"
+          echo "nom=$branche" >> "$GITHUB_OUTPUT"
+
+      - name: Ouvrir la demande de fusion
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCHE: ${{ steps.branche.outputs.nom }}
+          BASE: ${{ github.event.repository.default_branch }}
+          ACTION: ${{ inputs.action }}
+          SLUG: ${{ inputs.slug }}
+          RAPPORT: ${{ steps.cycle.outputs.rapport }}
+        run: |
+          set -euo pipefail
+          corps="$(cat "$RAPPORT")
+
+          ---
+          _Demande de fusion ouverte par le workflow de cycle de vie des annonces._"
+          existante="$(curl -sS -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls?head=${GITHUB_REPOSITORY%%/*}:${BRANCHE}&state=open" \
+            | node -e 'let e="";process.stdin.on("data",d=>e+=d).on("end",()=>{const j=JSON.parse(e);console.log(Array.isArray(j)&&j[0]?j[0].number:"")})')"
+          if [ -n "$existante" ]; then
+            echo "demande de fusion #$existante déjà ouverte, mise à jour par le push"
+            exit 0
+          fi
+          node -e '
+            const [titre, corps, branche, base] = process.argv.slice(1);
+            process.stdout.write(JSON.stringify({ title: titre, body: corps, head: branche, base }));
+          ' "Cycle de vie : $ACTION sur $SLUG" "$corps" "$BRANCHE" "$BASE" > /tmp/pr.json
+          curl -sS -X POST \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}/pulls" \
+            -d @/tmp/pr.json > /tmp/pr-reponse.json
+          numero="$(node -e 'const j=require("/tmp/pr-reponse.json");console.log(j.number ?? "")')"
+          if [ -z "$numero" ]; then
+            echo "création de la demande de fusion refusée :"
+            cat /tmp/pr-reponse.json
+            exit 1
+          fi
+          echo "demande de fusion #$numero ouverte sur $BRANCHE"

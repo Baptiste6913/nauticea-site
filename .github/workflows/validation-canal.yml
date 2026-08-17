@@ -1,0 +1,111 @@
+# Workflow temporaire : prouve la chaîne d'ingestion sur un runner réel,
+# sans écrire d'annonce, sans pousser de branche et sans ouvrir de demande
+# de fusion. À retirer avant la fusion de la session.
+name: Validation du canal PDF
+
+on:
+  push:
+    branches: [claude/canal-pdf]
+
+permissions:
+  contents: read
+
+jobs:
+  valider:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      - name: Dépendances
+        run: npm ci
+
+      - name: Preuve 1, la fiche réelle se lit sur ce runner
+        run: |
+          set -euo pipefail
+          node --experimental-strip-types scripts/ingest-fiche.mts \
+            ingest-fixtures/2010-Beneteau-Monte_Carlo_42.pdf \
+            --date 2026-08-17 --essai | tee /tmp/essai.txt
+          grep -qx 'slug=beneteau-monte-carlo-42-543' /tmp/essai.txt
+          grep -qx 'nouvelle=non' /tmp/essai.txt
+          grep -qx 'photos=24' /tmp/essai.txt
+          grep -qx 'photos_basse_def=23' /tmp/essai.txt
+          grep -qx 'photos_ecartees=5' /tmp/essai.txt
+          echo "lecture conforme, aucune annonce écrite :"
+          git status --porcelain
+
+      - name: Preuve 2, le mode essai n'écrit que son rapport
+        run: |
+          set -euo pipefail
+          modifies="$(git status --porcelain | grep -v '^?? rapports/essai-ingestion-' || true)"
+          if [ -n "$modifies" ]; then
+            echo "le mode essai a touché autre chose que son rapport :" >&2
+            echo "$modifies" >&2
+            exit 1
+          fi
+          test -f rapports/essai-ingestion-beneteau-monte-carlo-42-543.md
+          grep -q "l'annonce en ligne porte 28 photos" \
+            rapports/essai-ingestion-beneteau-monte-carlo-42-543.md
+          rm -f rapports/essai-ingestion-beneteau-monte-carlo-42-543.md
+
+      - name: Preuve 3, la fiche ambiguë est refusée sans rien écrire
+        run: |
+          set -euo pipefail
+          # Deux Sealine C335 au catalogue : sans année pour trancher, le
+          # script doit rendre la main. Ici l'année tranche, donc il passe.
+          node --experimental-strip-types scripts/ingest-fiche.mts \
+            ingest-fixtures/2021-Sealine-C335.pdf --date 2026-08-17 --essai \
+            | tee /tmp/sealine.txt
+          grep -qx 'slug=sealine-c335-520' /tmp/sealine.txt
+          grep -q "l'année 2021 a tranché" \
+            rapports/essai-ingestion-sealine-c335-520.md
+          rm -f rapports/essai-ingestion-sealine-c335-520.md
+          # PDF hostile : refus en code non nul, message explicite.
+          head -c 1024 /dev/urandom > /tmp/hostile.pdf
+          if node --experimental-strip-types scripts/ingest-fiche.mts \
+            /tmp/hostile.pdf --essai; then
+            echo "un fichier binaire aurait dû être refusé" >&2
+            exit 1
+          fi
+          echo "fichier binaire refusé comme attendu"
+
+      - name: Preuve 4, le cycle de vie marque vendu puis revient en arrière
+        run: |
+          set -euo pipefail
+          node --experimental-strip-types scripts/gerer-annonce.mts vendu ryck-280-508
+          grep -q 'ryck-280-508' content/annonces-etats.json
+          node --experimental-strip-types scripts/gerer-annonce.mts disponible ryck-280-508
+          node -e '
+            const e = require("./content/annonces-etats.json");
+            if (e.vendus.length !== 0) { throw new Error("retour en arrière raté"); }
+          '
+          git checkout -- content/annonces-etats.json
+          rm -f rapports/cycle-vendu-ryck-280-508.md rapports/cycle-disponible-ryck-280-508.md
+          # Slug inconnu : refus en code non nul.
+          if node --experimental-strip-types scripts/gerer-annonce.mts vendu bateau-inexistant; then
+            echo "un slug inconnu aurait dû être refusé" >&2
+            exit 1
+          fi
+          echo "slug inconnu refusé comme attendu"
+
+      - name: Preuve 5, la suite de tests passe sur ce runner
+        run: npm test
+
+      - name: Preuve 6, le harnais passe sur ce runner
+        run: npm run verifier
+
+      - name: Preuve 7, l'arbre est propre après toutes les preuves
+        run: |
+          set -euo pipefail
+          reste="$(git status --porcelain | grep -v '^ M verification.json' || true)"
+          if [ -n "$reste" ]; then
+            echo "des fichiers inattendus subsistent :" >&2
+            echo "$reste" >&2
+            exit 1
+          fi
+          echo "arbre propre, seul verification.json a été réécrit par le harnais"

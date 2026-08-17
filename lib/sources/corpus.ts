@@ -8,6 +8,33 @@ import type { Actualite, Boat } from "../types";
 const CORPUS_DIR = path.join(process.cwd(), "corpus-nauticea");
 const CRAWL_DATE = "2026-08-14";
 
+// Canal officiel depuis le 17/08 : annonces ingérées depuis les fiches PDF
+// BoatWizard, un fichier JSON par annonce. Elles complètent le corpus
+// historique et le remplacent au même slug, sans jamais le modifier.
+const DIR_INGEREES = path.join(process.cwd(), "content", "annonces");
+
+// Cycle de vie des annonces, tenu par .github/workflows/gerer-annonce.yml :
+// « vendus » garde l'annonce en ligne et indexée avec son bandeau,
+// « retirees » la sort du site, sa redirection 301 étant ajoutée à
+// corpus-nauticea/redirects.csv par le même workflow.
+const FICHIER_ETATS = path.join(process.cwd(), "content", "annonces-etats.json");
+
+interface EtatsAnnonces {
+  vendus: string[];
+  retirees: string[];
+}
+
+export function lireEtatsAnnonces(): EtatsAnnonces {
+  if (!fs.existsSync(FICHIER_ETATS)) {
+    return { vendus: [], retirees: [] };
+  }
+  const brut = JSON.parse(fs.readFileSync(FICHIER_ETATS, "utf-8")) as Partial<EtatsAnnonces>;
+  return {
+    vendus: Array.isArray(brut.vendus) ? brut.vendus : [],
+    retirees: Array.isArray(brut.retirees) ? brut.retirees : [],
+  };
+}
+
 interface RawBoat extends Omit<Boat, "photos" | "updated_at" | "source"> {
   photos: string[];
   source: string;
@@ -32,10 +59,28 @@ function nettoyerDescription(texte: string): string {
     .trim();
 }
 
+/**
+ * Annonces du canal fiche PDF. Leurs photos sont déjà des chemins locaux,
+ * écrits par l'ingestion, donc reprises telles quelles.
+ */
+export function getAnnoncesIngerees(): Boat[] {
+  if (!fs.existsSync(DIR_INGEREES)) {
+    return [];
+  }
+  return fs
+    .readdirSync(DIR_INGEREES)
+    .filter((f) => f.endsWith(".json"))
+    .sort()
+    .map(
+      (f) =>
+        JSON.parse(fs.readFileSync(path.join(DIR_INGEREES, f), "utf-8")) as Boat
+    );
+}
+
 export function getBoats(): Boat[] {
   if (!boatsCache) {
     const raw = readJson<RawBoat[]>("bateaux.json");
-    boatsCache = raw.map((b) => ({
+    const corpus: Boat[] = raw.map((b) => ({
       ...b,
       description: nettoyerDescription(b.description),
       // Les photos sont versionnées dans public/annonces/<slug>/ par
@@ -46,6 +91,20 @@ export function getBoats(): Boat[] {
       updated_at: CRAWL_DATE,
       source: "corpus" as const,
     }));
+    // Une annonce ingérée remplace celle du corpus au même slug, à sa
+    // place dans la liste ; un bateau nouveau arrive en tête.
+    const ingerees = getAnnoncesIngerees();
+    const parSlug = new Map(ingerees.map((b) => [b.slug, b]));
+    const slugsCorpus = new Set(corpus.map((b) => b.slug));
+    const etats = lireEtatsAnnonces();
+    const vendus = new Set(etats.vendus);
+    const retirees = new Set(etats.retirees);
+    boatsCache = [
+      ...ingerees.filter((b) => !slugsCorpus.has(b.slug)),
+      ...corpus.map((b) => parSlug.get(b.slug) ?? b),
+    ]
+      .filter((b) => !retirees.has(b.slug))
+      .map((b) => (vendus.has(b.slug) ? { ...b, vendu: true } : b));
   }
   return boatsCache;
 }
