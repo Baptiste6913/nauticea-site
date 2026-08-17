@@ -251,9 +251,21 @@ try {
       // Le harnais porte la liste des motifs interdits : il s'exclut.
       !f.endsWith("scripts/verifier.mjs")
   );
+  // Deux motifs visent le contenu publié et le code, pas la documentation
+  // interne : un rapport d'audit ou de recette doit pouvoir nommer le CMS
+  // et le prestataire d'origine, c'est même son objet. Ils restent
+  // interdits partout ailleurs, et dans le rendu de toutes les pages au
+  // contrôle 6b, qui est celui qui protège le site.
+  const TOLERES_EN_DOCUMENTATION = new Set(["joomla", "bretweb"]);
   for (const fichier of sources) {
     const contenu = fs.readFileSync(fichier, "utf-8");
+    const estDocumentation = path
+      .relative(RACINE, fichier)
+      .startsWith(`docs${path.sep}`);
     for (const [nom, regex] of INTERDITES_SOURCES) {
+      if (estDocumentation && TOLERES_EN_DOCUMENTATION.has(nom)) {
+        continue;
+      }
       if (regex.test(contenu)) {
         echec("interdit", `${path.relative(RACINE, fichier)} contient « ${nom} »`);
       }
