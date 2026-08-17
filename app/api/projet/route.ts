@@ -7,20 +7,32 @@ import {
   texteBorne,
   turnstileValide,
 } from "@/lib/anti-abus";
-import { BUDGETS, HORIZONS, NATURES, labelDe, valeursDe } from "@/lib/projet";
+import {
+  BUDGETS,
+  HORIZONS,
+  NATURES,
+  TYPES_RECHERCHE,
+  labelDe,
+  lignesRecapProjet,
+  valeursDe,
+} from "@/lib/projet";
 import { SITE } from "@/lib/site";
 
-// Réception du formulaire « Votre projet » (directive finale W3).
-// Active uniquement quand RESEND_API_KEY et CONTACT_TO_EMAIL sont
-// posées ; sinon la page sert le mode mailto et cette route répond 503.
-// Codes d'erreur sobres : aucun détail interne exposé.
+// Réception du formulaire « Votre projet » (directive finale W3,
+// envoi direct des retours V4). Active uniquement quand
+// RESEND_API_KEY, CONTACT_TO_EMAIL et EMAIL_FROM sont posées (bascule
+// par variables seules, sans redeploy) ; sinon la page sert le mode
+// dégradé et cette route répond 503. Codes d'erreur sobres.
 
 const TAILLE_MAX_CORPS = 8 * 1024;
 
 export async function POST(request: Request) {
   const cle = process.env.RESEND_API_KEY;
   const destinataire = process.env.CONTACT_TO_EMAIL;
-  if (!cle || !destinataire) {
+  // Expéditeur : variable EMAIL_FROM exclusivement, aucune valeur en
+  // dur (domaine dédié vérifié dans Resend, docs/GO-LIVE.md).
+  const expediteur = process.env.EMAIL_FROM;
+  if (!cle || !destinataire || !expediteur) {
     return NextResponse.json({ erreur: "Service indisponible." }, { status: 503 });
   }
 
@@ -67,6 +79,7 @@ export async function POST(request: Request) {
     !valeursDe(BUDGETS).includes(budget) ||
     !horizon ||
     !valeursDe(HORIZONS).includes(horizon) ||
+    (typeRecherche && !valeursDe(TYPES_RECHERCHE).includes(typeRecherche)) ||
     !nom ||
     !telephone ||
     !email
@@ -74,24 +87,19 @@ export async function POST(request: Request) {
     return NextResponse.json({ erreur: "Champs invalides." }, { status: 400 });
   }
 
-  const corps = [
-    `Nature du projet : ${labelDe(NATURES, nature)}`,
-    typeRecherche ? `Type recherché : ${typeRecherche}` : null,
-    `Budget : ${labelDe(BUDGETS, budget)}`,
-    `Horizon : ${labelDe(HORIZONS, horizon)}`,
-    `Nom : ${nom}`,
-    `Téléphone : ${telephone}`,
-    `Email : ${email}`,
-    annonce ? `Annonce concernée : ${annonce}` : null,
-    message ? `\n${message}` : null,
-  ]
-    .filter((l): l is string => l !== null)
-    .join("\n");
-
-  // Domaine expéditeur : nauticeayachting.fr exclusivement (SPF et
-  // DKIM posés à la vérification Resend, voir docs/GO-LIVE.md).
-  const expediteur =
-    process.env.CONTACT_FROM_EMAIL ?? "site@nauticeayachting.fr";
+  // Corps texte : exactement le récapitulatif montré au prospect,
+  // libellés humains uniquement (source partagée lib/projet.ts).
+  const corps = lignesRecapProjet({
+    nature,
+    type_recherche: typeRecherche ?? undefined,
+    budget,
+    horizon,
+    nom,
+    telephone,
+    email,
+    annonce: annonce ?? undefined,
+    message,
+  }).join("\n");
 
   const reponse = await fetch("https://api.resend.com/emails", {
     method: "POST",
@@ -103,7 +111,7 @@ export async function POST(request: Request) {
       from: `${SITE.nom} <${expediteur}>`,
       to: [destinataire],
       reply_to: email,
-      subject: `Lead site : ${labelDe(NATURES, nature)} (${labelDe(BUDGETS, budget)})`,
+      subject: `Lead site : ${labelDe(NATURES, nature)} · ${labelDe(BUDGETS, budget)}`,
       text: corps,
     }),
   });

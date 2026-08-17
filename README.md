@@ -45,8 +45,8 @@ npm run lint    # ESLint
 
 ## Formulaire de contact
 
-Copier `.env.example` vers `.env.local`. Avec `RESEND_API_KEY` et
-`CONTACT_TO_EMAIL` renseignés, le formulaire envoie via Resend
+Copier `.env.example` vers `.env.local`. Avec `RESEND_API_KEY`,
+`CONTACT_TO_EMAIL` et `EMAIL_FROM` renseignés, le formulaire envoie via Resend
 (honeypot anti-spam inclus). Sans clé, la page contact affiche les
 téléphones cliquables à la place du formulaire.
 
@@ -57,7 +57,7 @@ téléphones cliquables à la place du formulaire.
    dépôt : le framework Next.js est détecté automatiquement, aucun
    réglage de build à changer.
 3. Dans « Environment Variables », ajouter si souhaité `RESEND_API_KEY`,
-   `CONTACT_TO_EMAIL`, `CONTACT_FROM_EMAIL`, `NEXT_PUBLIC_CONTACT_EMAIL`.
+   `CONTACT_TO_EMAIL`, `EMAIL_FROM`, `NEXT_PUBLIC_CONTACT_EMAIL`.
 4. Déployer, puis pointer le domaine `www.nauticeayachting.fr` vers le
    projet (Settings > Domains) : les redirections 301 des anciennes URLs
    `.html` sont servies par `next.config.ts`.
