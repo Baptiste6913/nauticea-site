@@ -1,5 +1,5 @@
 {
-  "date": "2026-08-17T15:33:14.715Z",
+  "date": "2026-08-17T15:37:27.314Z",
   "statut": "OK",
   "resume": {
     "routes_sitemap": 44,
@@ -7,7 +7,7 @@
     "images_verifiees": 945,
     "redirections": 48,
     "fichiers_sources_scannes": 81,
-    "uses_workflows_verifies": 8
+    "uses_workflows_verifies": 6
   },
   "echecs": []
 }
