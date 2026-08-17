@@ -56,12 +56,33 @@ const ENTETES_SECURITE = [
   { key: "Content-Security-Policy", value: CSP },
 ];
 
+// Espace de gestion : jamais indexé, jamais suivi. L'en-tête vaut pour la
+// page comme pour ses routes d'API, et il agit même si un robot arrive
+// sans lire la balise de la page. Le chemin n'est volontairement pas
+// déclaré dans robots.txt, qui est public et publierait son existence.
+const ENTETES_GESTION = [
+  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+  { key: "Cache-Control", value: "no-store" },
+];
+
 const nextConfig: NextConfig = {
   redirects: async () => lireRedirections(),
   headers: async () => [
     {
       source: "/(.*)",
       headers: ENTETES_SECURITE,
+    },
+    {
+      source: "/gestion/:chemin*",
+      headers: ENTETES_GESTION,
+    },
+    {
+      source: "/gestion",
+      headers: ENTETES_GESTION,
+    },
+    {
+      source: "/api/gestion/:chemin*",
+      headers: ENTETES_GESTION,
     },
   ],
 };

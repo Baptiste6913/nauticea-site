@@ -22,6 +22,8 @@ import {
   DESSIN_MIN_POINTS,
   PIXELS_BASSE_DEF,
   PIXELS_MIN,
+  arbitrerPhotos,
+  dimensionsJpeg,
   trierPhotos,
 } from "../lib/ingest/photos.ts";
 import {
@@ -350,6 +352,139 @@ test("les cinq fiches donnent au moins dix photos exploitables", () => {
       1,
       nom
     );
+  }
+});
+
+// ---------- 4 bis. Politique photos en mise à jour ----------
+
+test("dimensions JPEG lues aux marqueurs de cadre", () => {
+  const r = lirePdf(fixture("2010-Beneteau-Monte_Carlo_42.pdf"));
+  for (const image of r.document.images) {
+    const d = dimensionsJpeg(image.octets);
+    assert.ok(d, `image ${image.rang} illisible`);
+    // Le dictionnaire du PDF et l'en-tête du JPEG doivent concorder.
+    assert.equal(d.largeur, image.largeur, `image ${image.rang}`);
+    assert.equal(d.hauteur, image.hauteur, `image ${image.rang}`);
+  }
+});
+
+test("dimensions JPEG : entrée non JPEG rend null sans lever", () => {
+  for (const octets of [
+    new Uint8Array(0),
+    new Uint8Array([0x89, 0x50, 0x4e, 0x47]),
+    new Uint8Array([0xff, 0xd8, 0xff]),
+    new Uint8Array(Buffer.from("%PDF-1.4", "latin1")),
+  ]) {
+    assert.equal(dimensionsJpeg(octets), null);
+  }
+});
+
+function photoFactice(rang, largeur, hauteur) {
+  return {
+    rang,
+    basseDef: Math.max(largeur, hauteur) < PIXELS_BASSE_DEF,
+    image: {
+      octets: new Uint8Array([1]),
+      largeur,
+      hauteur,
+      largeurDessin: 200,
+      hauteurDessin: 150,
+      page: 1,
+      rang,
+      objet: rang,
+    },
+  };
+}
+
+test("photo en ligne jamais remplacée par une version de moindre résolution", () => {
+  const decisions = arbitrerPhotos(
+    [{ rang: 1, nom: "01.jpg", dimensions: { largeur: 1600, hauteur: 1200 } }],
+    [photoFactice(1, 480, 320)]
+  );
+  assert.equal(decisions.length, 1);
+  assert.equal(decisions[0].decision, "conservee");
+  assert.equal(decisions[0].aEcrire, undefined);
+  assert.match(decisions[0].detail, /1600x1200 conservée/);
+});
+
+test("photo en ligne remplacée quand la fiche fait strictement mieux", () => {
+  const decisions = arbitrerPhotos(
+    [{ rang: 1, nom: "01.jpg", dimensions: { largeur: 700, hauteur: 525 } }],
+    [photoFactice(1, 1500, 1000)]
+  );
+  assert.equal(decisions[0].decision, "remplacee");
+  assert.ok(decisions[0].aEcrire);
+});
+
+test("résolution égale : la photo en ligne est gardée, aucune écriture inutile", () => {
+  const decisions = arbitrerPhotos(
+    [{ rang: 1, nom: "01.jpg", dimensions: { largeur: 800, hauteur: 600 } }],
+    [photoFactice(1, 800, 600)]
+  );
+  assert.equal(decisions[0].decision, "conservee");
+});
+
+test("photo en ligne illisible : remplacée par celle de la fiche", () => {
+  const decisions = arbitrerPhotos(
+    [{ rang: 1, nom: "01.jpg", dimensions: null }],
+    [photoFactice(1, 480, 320)]
+  );
+  assert.equal(decisions[0].decision, "remplacee");
+});
+
+test("photos au-delà de ce que la fiche fournit : conservées, jamais supprimées", () => {
+  const decisions = arbitrerPhotos(
+    [
+      { rang: 1, nom: "01.jpg", dimensions: { largeur: 700, hauteur: 525 } },
+      { rang: 2, nom: "02.jpg", dimensions: { largeur: 700, hauteur: 525 } },
+      { rang: 3, nom: "03.jpg", dimensions: { largeur: 700, hauteur: 525 } },
+    ],
+    [photoFactice(1, 1500, 1000)]
+  );
+  assert.equal(decisions.length, 3);
+  assert.deepEqual(
+    decisions.map((d) => d.decision),
+    ["remplacee", "gardee-hors-fiche", "gardee-hors-fiche"]
+  );
+  assert.equal(decisions.filter((d) => d.aEcrire).length, 1);
+});
+
+test("annonce nouvelle : toutes les photos de la fiche sont écrites", () => {
+  const decisions = arbitrerPhotos([], [photoFactice(1, 600, 400), photoFactice(2, 600, 400)]);
+  assert.deepEqual(
+    decisions.map((d) => d.decision),
+    ["nouvelle", "nouvelle"]
+  );
+  assert.equal(decisions.filter((d) => d.aEcrire).length, 2);
+});
+
+test("re-dépôt du Monte Carlo 42 : aucune photo perdue ni dégradée", () => {
+  // Cas réel du site : 28 photos en ligne, la fiche n'en offre que 24 et
+  // de moindre résolution, sauf la photo de tête.
+  const enLigne = [];
+  const dossier = path.join(process.cwd(), "public", "annonces", "beneteau-monte-carlo-42-543");
+  for (const nom of fs.readdirSync(dossier).sort()) {
+    const rang = /^(\d+)\.jpg$/.exec(nom);
+    if (!rang) {
+      continue;
+    }
+    enLigne.push({
+      rang: Number(rang[1]),
+      nom,
+      dimensions: dimensionsJpeg(new Uint8Array(fs.readFileSync(path.join(dossier, nom)))),
+    });
+  }
+  assert.equal(enLigne.length, 28);
+  const r = lirePdf(fixture("2010-Beneteau-Monte_Carlo_42.pdf"));
+  const { retenues } = trierPhotos(r.document.images);
+  const decisions = arbitrerPhotos(enLigne, retenues);
+  assert.equal(decisions.length, 28, "aucune photo ne disparaît");
+  assert.equal(decisions.filter((d) => d.decision === "remplacee").length, 1);
+  assert.equal(decisions.filter((d) => d.decision === "nouvelle").length, 0);
+  for (const d of decisions) {
+    if (d.decision === "remplacee") {
+      assert.match(d.detail, /la fiche fait mieux/);
+    }
   }
 });
 
