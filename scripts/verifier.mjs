@@ -6,8 +6,8 @@
 // description, canonicals, JSON-LD, les 48 redirections 301, chaînes
 // interdites dans les sources et le rendu, pages masquées hors sitemap
 // et hors navigation, références d'actions GitHub épinglées sur des
-// condensats. Exit code non nul au moindre échec ; résultat écrit dans
-// verification.json.
+// condensats, discrétion et fermeture de l'espace de gestion. Exit code
+// non nul au moindre échec ; résultat écrit dans verification.json.
 
 import { execSync, spawn } from "node:child_process";
 import fs from "node:fs";
@@ -30,10 +30,25 @@ if (!process.argv.includes("--sans-build")) {
   execSync("npm run build", { stdio: "inherit" });
 }
 
+// L'espace de gestion n'est servi que si sa configuration existe : le
+// harnais pose donc des valeurs d'essai, sans quoi ses contrôles
+// porteraient sur un espace éteint. Ces valeurs ne sortent pas d'ici.
+const SECRET_ESSAI = "harnais-de-verification-secret-de-40-caracteres";
+const ADMIN_ESSAI = "essai-autorise@nauticeayachting.fr";
+const ADMIN_INCONNU = "essai-inconnu@example.invalid";
+
 const serveur = spawn(
   path.join(RACINE, "node_modules", ".bin", "next"),
   ["start", "-p", String(PORT)],
-  { stdio: "ignore", detached: false }
+  {
+    stdio: "ignore",
+    detached: false,
+    env: {
+      ...process.env,
+      SESSION_SECRET: SECRET_ESSAI,
+      ADMIN_EMAILS: ADMIN_ESSAI,
+    },
+  }
 );
 
 async function attendreServeur() {
@@ -236,9 +251,21 @@ try {
       // Le harnais porte la liste des motifs interdits : il s'exclut.
       !f.endsWith("scripts/verifier.mjs")
   );
+  // Deux motifs visent le contenu publié et le code, pas la documentation
+  // interne : un rapport d'audit ou de recette doit pouvoir nommer le CMS
+  // et le prestataire d'origine, c'est même son objet. Ils restent
+  // interdits partout ailleurs, et dans le rendu de toutes les pages au
+  // contrôle 6b, qui est celui qui protège le site.
+  const TOLERES_EN_DOCUMENTATION = new Set(["joomla", "bretweb"]);
   for (const fichier of sources) {
     const contenu = fs.readFileSync(fichier, "utf-8");
+    const estDocumentation = path
+      .relative(RACINE, fichier)
+      .startsWith(`docs${path.sep}`);
     for (const [nom, regex] of INTERDITES_SOURCES) {
+      if (estDocumentation && TOLERES_EN_DOCUMENTATION.has(nom)) {
+        continue;
+      }
       if (regex.test(contenu)) {
         echec("interdit", `${path.relative(RACINE, fichier)} contient « ${nom} »`);
       }
@@ -337,6 +364,122 @@ try {
   if (repGamme.status !== 404) {
     echec("masquage", `/gamme-neuve devrait renvoyer 404 sans flag (${repGamme.status})`);
   }
+
+  // ---------- 7 bis. Espace de gestion : discret et fermé ----------
+  // L'espace est une télécommande privée : il ne doit apparaître nulle
+  // part côté public, et aucune de ses routes ne doit répondre sans
+  // session. Ces contrôles sont permanents, pas une vérification de
+  // session.
+  let controlesGestion = 0;
+  const compter = () => {
+    controlesGestion += 1;
+  };
+
+  if (urls.some((u) => u.includes("gestion"))) {
+    echec("gestion", "une adresse de l'espace de gestion figure au sitemap");
+  }
+  compter();
+
+  // Aucune page publique ne le mentionne, ni en lien, ni en commentaire.
+  for (const [route, html] of pages) {
+    if (/gestion/i.test(html)) {
+      echec("gestion", `la page ${route || "/"} mentionne l'espace de gestion`);
+    }
+  }
+  compter();
+
+  // Aucun script servi à une page publique ne le mentionne : c'est ce qui
+  // garantit qu'aucun indice ne traîne dans le bundle.
+  const scriptsPublics = new Set();
+  for (const [, html] of pages) {
+    for (const src of extraire(html, /<script[^>]+src="([^"]+)"/g)) {
+      if (src.startsWith("/_next/")) {
+        scriptsPublics.add(src);
+      }
+    }
+  }
+  for (const src of scriptsPublics) {
+    const corps = await (await fetch(`${BASE}${src}`)).text();
+    if (/gestion/i.test(corps)) {
+      echec("gestion", `le script public ${src} mentionne l'espace de gestion`);
+    }
+  }
+  resume.scripts_publics_verifies = scriptsPublics.size;
+  compter();
+
+  // La page existe, mais interdit l'indexation, par la balise comme par
+  // l'en-tête.
+  const repGestion = await fetch(`${BASE}/gestion`);
+  const entetesGestion = repGestion.headers.get("x-robots-tag") ?? "";
+  if (!/noindex/.test(entetesGestion) || !/nofollow/.test(entetesGestion)) {
+    echec("gestion", `/gestion sans en-tête X-Robots-Tag complet (« ${entetesGestion} »)`);
+  }
+  const htmlGestion = await repGestion.text();
+  if (!/<meta name="robots"[^>]*noindex/.test(htmlGestion)) {
+    echec("gestion", "/gestion sans balise meta robots noindex");
+  }
+  compter();
+
+  // Toutes les routes de données exigent une session.
+  for (const [chemin, methode] of [
+    ["/api/gestion/annonces", "GET"],
+    ["/api/gestion/action", "POST"],
+    ["/api/gestion/depot", "POST"],
+  ]) {
+    const rep = await fetch(`${BASE}${chemin}`, {
+      method: methode,
+      headers: { "Content-Type": "application/json" },
+      body: methode === "POST" ? "{}" : undefined,
+    });
+    if (rep.status !== 401) {
+      echec("gestion", `${chemin} répond ${rep.status} sans session, 401 attendu`);
+    }
+  }
+  compter();
+
+  // Demande de lien : adresse autorisée et adresse inconnue doivent
+  // donner exactement la même réponse, sans quoi la route deviendrait un
+  // annuaire des administrateurs.
+  const reponsesLien = [];
+  for (const email of [ADMIN_ESSAI, ADMIN_INCONNU]) {
+    const rep = await fetch(`${BASE}/api/gestion/lien`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, horodatage: Date.now() - 9000 }),
+    });
+    reponsesLien.push({ statut: rep.status, corps: await rep.text() });
+  }
+  const [autorisee, inconnue] = reponsesLien;
+  if (autorisee.statut !== inconnue.statut || autorisee.corps !== inconnue.corps) {
+    echec(
+      "gestion",
+      `la demande de lien distingue une adresse autorisée (${autorisee.statut}) d'une inconnue (${inconnue.statut})`
+    );
+  }
+  compter();
+
+  // Le jeton GitHub ne doit jamais franchir la frontière du serveur.
+  for (const src of scriptsPublics) {
+    const corps = await (await fetch(`${BASE}${src}`)).text();
+    for (const nom of ["GITHUB_GESTION_TOKEN", "SESSION_SECRET", "ADMIN_EMAILS"]) {
+      if (corps.includes(nom)) {
+        echec("gestion", `le script public ${src} contient le nom de secret ${nom}`);
+      }
+    }
+  }
+  const scriptsGestion = extraire(htmlGestion, /<script[^>]+src="([^"]+)"/g).filter(
+    (s) => s.startsWith("/_next/")
+  );
+  for (const src of scriptsGestion) {
+    const corps = await (await fetch(`${BASE}${src}`)).text();
+    for (const secret of [SECRET_ESSAI, ADMIN_ESSAI, "GITHUB_GESTION_TOKEN"]) {
+      if (corps.includes(secret)) {
+        echec("gestion", `le script ${src} de l'espace expose ${secret.slice(0, 20)}`);
+      }
+    }
+  }
+  compter();
+  resume.controles_gestion = controlesGestion;
 
   // ---------- 8. En-têtes de sécurité ----------
   const entetes = (await fetch(`${BASE}/`)).headers;

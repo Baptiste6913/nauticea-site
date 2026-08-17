@@ -15,7 +15,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { lireFichePdf } from "../lib/ingest/fiche-pdf.ts";
-import { trierPhotos, nomPhoto, PIXELS_BASSE_DEF } from "../lib/ingest/photos.ts";
+import {
+  arbitrerPhotos,
+  dimensionsJpeg,
+  trierPhotos,
+  type ArbitragePhoto,
+  type PhotoEnLigne,
+  PIXELS_BASSE_DEF,
+} from "../lib/ingest/photos.ts";
 import {
   annonceDepuisFiche,
   diffAnnonces,
@@ -134,33 +141,49 @@ if (slug === "") {
   process.exit(2);
 }
 
-// Photos : tri, puis écriture sous public/annonces/<slug>/.
+// Photos : tri, arbitrage contre celles déjà en ligne, puis écriture.
 const tri = trierPhotos(document.images);
 const dossierPhotos = path.join(DIR_PHOTOS, slug);
-const cheminsPhotos: string[] = [];
-if (essai) {
-  for (const photo of tri.retenues) {
-    cheminsPhotos.push(`/annonces/${slug}/${nomPhoto(photo.rang)}`);
-  }
-} else if (tri.retenues.length > 0) {
-  fs.mkdirSync(dossierPhotos, { recursive: true });
-  // Photos précédentes retirées d'abord : une fiche régénérée fait foi,
-  // et un reste de l'ancienne série produirait des trous ou des doublons.
-  for (const nom of fs.existsSync(dossierPhotos)
-    ? fs.readdirSync(dossierPhotos)
-    : []) {
-    if (/^\d+\.jpg$/.test(nom)) {
-      fs.rmSync(path.join(dossierPhotos, nom));
+
+// Photos déjà publiées, avec leurs dimensions réelles : c'est ce qui
+// permet de ne jamais dégrader une galerie au re-dépôt d'une fiche.
+const enLigne: PhotoEnLigne[] = [];
+if (fs.existsSync(dossierPhotos)) {
+  for (const nom of fs.readdirSync(dossierPhotos).sort()) {
+    const rang = /^(\d+)\.jpg$/.exec(nom);
+    if (!rang) {
+      continue;
     }
+    const octets = new Uint8Array(fs.readFileSync(path.join(dossierPhotos, nom)));
+    enLigne.push({
+      rang: Number(rang[1]),
+      nom,
+      dimensions: dimensionsJpeg(octets),
+    });
   }
-  for (const photo of tri.retenues) {
-    const nom = nomPhoto(photo.rang);
-    fs.writeFileSync(path.join(dossierPhotos, nom), photo.image.octets);
-    cheminsPhotos.push(`/annonces/${slug}/${nom}`);
+}
+
+const arbitrage: ArbitragePhoto[] = arbitrerPhotos(enLigne, tri.retenues);
+const cheminsPhotos = arbitrage.map((d) => `/annonces/${slug}/${d.nom}`);
+if (!essai) {
+  const aEcrire = arbitrage.filter((d) => d.aEcrire !== undefined);
+  if (aEcrire.length > 0) {
+    fs.mkdirSync(dossierPhotos, { recursive: true });
+  }
+  for (const decision of aEcrire) {
+    fs.writeFileSync(
+      path.join(dossierPhotos, decision.nom),
+      (decision.aEcrire as (typeof tri.retenues)[number]).image.octets
+    );
   }
 }
 
 const basseDef = tri.retenues.filter((p) => p.basseDef).length;
+const remplacees = arbitrage.filter((d) => d.decision === "remplacee").length;
+const nouvellesPhotos = arbitrage.filter((d) => d.decision === "nouvelle").length;
+const conservees = arbitrage.filter(
+  (d) => d.decision === "conservee" || d.decision === "gardee-hors-fiche"
+).length;
 const { annonce, notes } = annonceDepuisFiche(fiche, {
   photos: cheminsPhotos,
   photosBasseDef: basseDef,
@@ -202,12 +225,12 @@ lignes.push("");
 // résolution que ceux du site historique. C'est une décision humaine, pas
 // une décision de script, donc elle est posée en tête du rapport.
 const alerteQualite: string[] = [...notesRapprochement];
-if (existante && existante.photos.length > tri.retenues.length) {
+if (conservees > 0) {
   alerteQualite.push(
-    `l'annonce en ligne porte ${existante.photos.length} photos, la fiche n'en fournit que ${tri.retenues.length} : ${existante.photos.length - tri.retenues.length} photos seraient retirées`
+    `${conservees} photos déjà en ligne sont conservées telles quelles : la fiche n'offrait pas mieux, une photo n'est jamais remplacée par une version de moindre résolution`
   );
 }
-if (basseDef > 0) {
+if (basseDef > 0 && nouvellesPhotos + remplacees > 0) {
   alerteQualite.push(
     `${basseDef} des ${tri.retenues.length} photos de la fiche sont sous ${PIXELS_BASSE_DEF} pixels : la fiche PDF sert des visuels de moindre résolution que le site`
   );
@@ -275,19 +298,44 @@ lignes.push("");
 lignes.push("## Photos");
 lignes.push("");
 lignes.push(
-  `- retenues : ${tri.retenues.length}${
+  `- lues dans la fiche : ${tri.retenues.length}${
     basseDef > 0
       ? `, dont ${basseDef} sous ${PIXELS_BASSE_DEF} pixels, donc en basse définition`
       : ""
   }`
 );
 if (tri.rejetees.length === 0) {
-  lignes.push("- écartées : aucune");
+  lignes.push("- écartées de la fiche : aucune");
 } else {
-  lignes.push(`- écartées : ${tri.rejetees.length}`);
+  lignes.push(`- écartées de la fiche : ${tri.rejetees.length}`);
   for (const r of tri.rejetees) {
     lignes.push(`  - rang ${r.image.rang}, page ${r.image.page} : ${r.motif}, ${r.detail}`);
   }
+}
+lignes.push(
+  `- publiées après arbitrage : ${arbitrage.length} (${nouvellesPhotos} nouvelles, ${remplacees} remplacées, ${conservees} conservées)`
+);
+lignes.push("");
+lignes.push("### Décision photo par photo");
+lignes.push("");
+if (arbitrage.length === 0) {
+  lignes.push("Aucune photo, ni en ligne ni dans la fiche.");
+} else {
+  const LIBELLES_DECISION: Record<ArbitragePhoto["decision"], string> = {
+    nouvelle: "nouvelle",
+    remplacee: "remplacée",
+    conservee: "conservée",
+    "gardee-hors-fiche": "conservée",
+  };
+  lignes.push("| photo | décision | détail |");
+  lignes.push("| --- | --- | --- |");
+  for (const d of arbitrage) {
+    lignes.push(`| ${d.nom} | ${LIBELLES_DECISION[d.decision]} | ${d.detail} |`);
+  }
+  lignes.push("");
+  lignes.push(
+    "Une photo en ligne n'est jamais remplacée par une version de résolution inférieure, et une photo au-delà de ce que la fiche fournit est conservée."
+  );
 }
 lignes.push("");
 
@@ -331,6 +379,10 @@ console.log(`nouvelle=${existante ? "non" : "oui"}`);
 console.log(`photos=${tri.retenues.length}`);
 console.log(`photos_basse_def=${basseDef}`);
 console.log(`photos_ecartees=${tri.rejetees.length}`);
+console.log(`photos_publiees=${arbitrage.length}`);
+console.log(`photos_nouvelles=${nouvellesPhotos}`);
+console.log(`photos_remplacees=${remplacees}`);
+console.log(`photos_conservees=${conservees}`);
 console.log(
   `a_confirmer=${fiche.a_confirmer.length + notes.length + alerteQualite.length}`
 );

@@ -57,7 +57,7 @@ Ce qui est conservé, jamais écrasé par une fiche qui ne le dit pas :
 - la catégorie et la sous-catégorie,
 - les caractéristiques que la fiche ne donne pas,
 - le marquage « vendu » s'il est posé,
-- les photos, si la fiche n'en fournit aucune d'exploitable.
+- les photos, dès que la fiche n'offre pas une meilleure résolution.
 
 ## Marquer un bateau vendu
 
@@ -114,15 +114,20 @@ logo est écarté automatiquement.
 Point de vigilance mesuré sur les fiches réelles : les photos incluses
 dans le PDF sont **de plus faible résolution que celles du site
 actuel**. Sur la fiche du Monte Carlo 42, les photos font 480 par 320 ou
-600 par 400 pixels, contre des photos bien plus grandes en ligne. Les
-photos sous 400 pixels sont écartées, et celles sous 800 pixels sont
-signalées dans la demande de fusion.
+600 par 400 pixels, contre 700 par 525 en ligne. Les photos sous
+400 pixels sont écartées, et celles sous 800 pixels sont signalées dans
+la demande de fusion.
 
-Conséquence pratique : pour un bateau déjà en ligne avec de belles
-photos, la demande de fusion vous dira combien de photos seraient
-perdues. C'est à ce moment-là qu'il faut décider. Pour un bateau
-nouveau, les photos de la fiche font l'affaire, mais de vraies photos
-restent préférables.
+**Une photo en ligne n'est jamais remplacée par une version moins
+bonne.** À chaque re-dépôt, le dépôt compare photo par photo : il ne
+remplace que si la fiche fait strictement mieux, garde l'existante sinon,
+et conserve les photos au-delà de ce que la fiche fournit. Les textes,
+eux, sont toujours mis à jour. Vous pouvez donc redéposer une fiche sans
+craindre d'appauvrir la galerie.
+
+La demande de fusion porte un tableau « Décision photo par photo » qui
+dit, pour chaque photo, ce qui a été fait et pourquoi. Sur le Monte
+Carlo 42, ce tableau donne 1 photo remplacée, 27 conservées, 0 perdue.
 
 ## Désigner soi-même l'annonce à mettre à jour
 

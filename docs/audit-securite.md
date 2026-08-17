@@ -364,3 +364,71 @@ aucune donnée.
 8. Points de confort : ajouter `X-Frame-Options: DENY`, arbitrer le sort
    de `.env.example`, et ne soumettre le domaine à la liste HSTS preload
    qu'en connaissance de l'engagement que cela représente.
+
+---
+
+# Ajout du 18/08 : espace de gestion privé
+
+L'espace `/gestion` ajoute au site sa première surface authentifiée. Cette
+section complète l'audit du 17/08 plutôt que de la laisser dans un corps
+de demande de fusion, où elle n'aurait servi qu'une fois.
+
+## Ce qui protège l'espace
+
+- **Authentification par lien signé**, HMAC-SHA256, valable 15 minutes,
+  puis cookie de session signé, `HttpOnly`, `SameSite=Lax`, `Secure` en
+  production, 7 jours. Aucun mot de passe, donc rien à voler, à réutiliser
+  ailleurs ni à faire tourner en force brute.
+- **Liste blanche d'adresses** en variable d'environnement, relue à chaque
+  vérification de jeton : retirer une adresse coupe l'accès immédiatement,
+  même cookie en cours.
+- **Aucune énumération possible.** La demande de lien rend le même corps
+  et le même code qu'une adresse soit autorisée ou non, y compris quand
+  l'envoi du courriel échoue. Le premier jet renvoyait 200 pour une
+  adresse inconnue et 502 pour une adresse autorisée dont l'envoi avait
+  échoué : le code HTTP suffisait alors à dresser la liste des
+  administrateurs. Corrigé, et vérifié en permanence par le harnais, qui
+  compare les deux réponses.
+- **Secret court refusé** : sous 32 caractères, l'espace ne se sert pas du
+  tout, plutôt que de se protéger mal.
+- **Contrôle de session en première ligne** de chaque route de données, et
+  vérification permanente que ces routes répondent 401 sans cookie.
+- **Jeton GitHub à portée fine** sur ce seul dépôt, trois permissions,
+  jamais servi au client. Le harnais relit à chaque exécution les scripts
+  réellement servis, pages publiques et page de gestion, et échoue si un
+  nom de secret y apparaît.
+- **Aucune écriture sur la branche par défaut** : tout geste passe par une
+  branche puis une demande de fusion relue. C'est aussi ce qui rend
+  l'espace inoffensif en cas de session volée : au pire, une proposition
+  de modification à refuser.
+
+## Faiblesses assumées, et pourquoi
+
+- **Pas de révocation d'une session isolée.** Sans base de données, la
+  seule révocation est la rotation de `SESSION_SECRET`, qui déconnecte
+  tout le monde. Acceptable pour deux ou trois administrateurs, et c'est
+  le geste à faire si un téléphone connecté est perdu. Documenté dans
+  `docs/GESTION.md` et `docs/GO-LIVE.md`.
+- **Lien de connexion réutilisable pendant 15 minutes.** Un lien
+  intercepté dans cette fenêtre ouvre une session. Le rendre à usage
+  unique demanderait un stockage d'état, donc une base : la fenêtre courte
+  est le compromis retenu.
+- **Limitation de débit toujours en mémoire.** Le constat du point 4 de
+  l'audit vaut pour `/api/gestion/lien` comme pour les formulaires
+  publics : la borne du code ne garantit rien de distribué. Les règles de
+  pare-feu à poser sont listées dans `docs/GO-LIVE.md`, et cette route est
+  la seule de l'espace ouverte sans session, donc la seule à mériter une
+  règle stricte.
+- **Le chemin `/gestion` n'est pas un secret.** Il n'est publié nulle
+  part, mais la sécurité ne repose pas là-dessus : elle repose sur
+  l'authentification. Il n'est volontairement pas déclaré dans
+  `robots.txt`, qui est public et le révélerait ; l'effet voulu est obtenu
+  par l'en-tête `X-Robots-Tag: noindex, nofollow, noarchive`.
+
+## Ce que cet ajout change aux recommandations du 17/08
+
+Le point 4 gagne une raison de plus d'être traité, et une cible
+supplémentaire : `/api/gestion/lien`. Le point 8, qui demandait d'arbitrer
+le sort de `.env.example`, est tranché : le gabarit est désormais
+versionné, sans aucune valeur, parce que son absence faisait échouer le
+harnais sur tout clone neuf.

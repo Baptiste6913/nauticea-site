@@ -9,7 +9,7 @@ Essai de lecture : aucune annonce ni photo n'a été écrite, seul ce rapport l'
 
 ## À confirmer par un humain
 
-- l'annonce en ligne porte 28 photos, la fiche n'en fournit que 24 : 4 photos seraient retirées
+- 27 photos déjà en ligne sont conservées telles quelles : la fiche n'offrait pas mieux, une photo n'est jamais remplacée par une version de moindre résolution
 - 23 des 24 photos de la fiche sont sous 800 pixels : la fiche PDF sert des visuels de moindre résolution que le site
 - puissance absente pour le moteur 1 « 2010 Volvo D6-370 »
 - puissance absente pour le moteur 2 « 2010 Volvo D6-370 »
@@ -41,18 +41,53 @@ Essai de lecture : aucune annonce ni photo n'a été écrite, seul ce rapport l'
 
 ## Photos
 
-- retenues : 24, dont 23 sous 800 pixels, donc en basse définition
-- écartées : 5
+- lues dans la fiche : 24, dont 23 sous 800 pixels, donc en basse définition
+- écartées de la fiche : 5
   - rang 1, page 1 : logo-ou-pictogramme, posée en 39x39 points, sous le seuil de 90
   - rang 3, page 1 : resolution-insuffisante, 360x240 pixels, sous le seuil de 400
   - rang 4, page 1 : resolution-insuffisante, 360x240 pixels, sous le seuil de 400
   - rang 5, page 1 : resolution-insuffisante, 360x240 pixels, sous le seuil de 400
   - rang 6, page 1 : resolution-insuffisante, 360x240 pixels, sous le seuil de 400
+- publiées après arbitrage : 28 (0 nouvelles, 1 remplacées, 27 conservées)
+
+### Décision photo par photo
+
+| photo | décision | détail |
+| --- | --- | --- |
+| 01.jpg | remplacée | 700x525 remplacée par 1500x1000 pixels, la fiche fait mieux |
+| 02.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 03.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 04.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 05.jpg | conservée | 700x525 conservée, la fiche n'offrait que 600x400 pixels |
+| 06.jpg | conservée | 700x525 conservée, la fiche n'offrait que 600x400 pixels |
+| 07.jpg | conservée | 700x525 conservée, la fiche n'offrait que 600x400 pixels |
+| 08.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 09.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 10.jpg | conservée | 768x768 conservée, la fiche n'offrait que 480x320 pixels |
+| 11.jpg | conservée | 877x658 conservée, la fiche n'offrait que 480x320 pixels |
+| 12.jpg | conservée | 576x768 conservée, la fiche n'offrait que 480x320 pixels |
+| 13.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 14.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 15.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 16.jpg | conservée | 700x525 conservée, la fiche n'offrait que 600x400 pixels |
+| 17.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 18.jpg | conservée | 768x768 conservée, la fiche n'offrait que 480x320 pixels |
+| 19.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 20.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 21.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 22.jpg | conservée | 768x768 conservée, la fiche n'offrait que 480x320 pixels |
+| 23.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 24.jpg | conservée | 700x525 conservée, la fiche n'offrait que 480x320 pixels |
+| 25.jpg | conservée | 700x525 conservée, la fiche ne va pas jusqu'à ce rang |
+| 26.jpg | conservée | 700x525 conservée, la fiche ne va pas jusqu'à ce rang |
+| 27.jpg | conservée | 700x525 conservée, la fiche ne va pas jusqu'à ce rang |
+| 28.jpg | conservée | 768x768 conservée, la fiche ne va pas jusqu'à ce rang |
+
+Une photo en ligne n'est jamais remplacée par une version de résolution inférieure, et une photo au-delà de ce que la fiche fournit est conservée.
 
 ## Différences avec l'annonce en ligne
 
 - modele : MONTE CARLO 42 devient Monte Carlo 42
-- nombre de photos : 28 devient 24
 - nombre d'équipements : 5 devient 26
 - longueur de la description : 507 devient 2272
 - spec « Cabines » : vide devient 2
