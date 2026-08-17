@@ -18,8 +18,12 @@ export default async function Projet({
 }) {
   const { annonce } = await searchParams;
   const bateau = annonce ? getBoatBySlug(annonce) : undefined;
+  // Détection du mode côté serveur exclusivement (retours V4 W2c) :
+  // bascule par variables seules, sans redeploy de code.
   const modeAuto = Boolean(
-    process.env.RESEND_API_KEY && process.env.CONTACT_TO_EMAIL
+    process.env.RESEND_API_KEY &&
+      process.env.CONTACT_TO_EMAIL &&
+      process.env.EMAIL_FROM
   );
 
   return (

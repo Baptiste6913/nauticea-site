@@ -2,18 +2,25 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BUDGETS, HORIZONS, NATURES, labelDe } from "@/lib/projet";
+import {
+  BUDGETS,
+  HORIZONS,
+  NATURES,
+  TYPES_RECHERCHE,
+  lignesRecapProjet,
+} from "@/lib/projet";
 import { SITE } from "@/lib/site";
 import { typoFr } from "@/lib/format";
 
 // Formulaire de conversion « Votre projet » (directive finale W3,
-// parcours dégradé fiabilisé aux retours client V3 du 16/08).
-// Mode automatique (RESEND_API_KEY posée côté serveur) : envoi via
-// /api/projet, inchangé et prioritaire. Mode dégradé (par défaut) :
-// le clic sur envoyer affiche une étape de confirmation avec le
-// récapitulatif complet et trois canaux (messagerie via mailto
-// compacté sous 1800 caractères, copie du message, coordonnées en
-// clair), car mailto échoue en silence sans client mail associé.
+// parcours fiabilisé aux retours V3 puis V4 du 16/08).
+// Étape de confirmation dans les deux modes : champs structurés en
+// récapitulatif (libellés humains uniquement), message libre éditable.
+// Mode automatique (variables Resend posées côté serveur, détection
+// serveur dans app/projet/page.tsx) : bouton primaire « Envoyer ma
+// demande » vers /api/projet, canaux de secours visibles en échec.
+// Mode dégradé : trois canaux (mailto compacté sous 1800 caractères,
+// copie avec feedback, coordonnées en clair).
 
 type Statut = "repos" | "envoi" | "ok" | "erreur";
 type Etape = "saisie" | "confirmation";
@@ -24,7 +31,7 @@ const CHAMP_ERREUR =
   "mt-1 w-full rounded border-2 border-red-700 bg-white px-3 py-2";
 const LIBELLE = "block text-sm font-medium";
 const BOUTON_PLEIN =
-  "inline-block rounded bg-azur-2 px-5 py-2.5 font-semibold text-white hover:bg-marine";
+  "inline-block rounded bg-azur-2 px-5 py-2.5 font-semibold text-white hover:bg-marine disabled:opacity-60";
 const BOUTON_BORD =
   "inline-block rounded border border-marine px-5 py-2.5 font-semibold text-marine hover:bg-ecume";
 
@@ -55,28 +62,13 @@ function validerDonnees(d: Record<string, string>): Record<string, string> {
   return erreurs;
 }
 
-// Récapitulatif complet, affiché à l'écran et copié tel quel.
-function lignesRecap(d: Record<string, string>): string[] {
-  return [
-    `Nature du projet : ${labelDe(NATURES, d.nature ?? "")}`,
-    d.type_recherche ? `Type recherché : ${d.type_recherche}` : null,
-    `Budget : ${labelDe(BUDGETS, d.budget ?? "")}`,
-    `Horizon : ${labelDe(HORIZONS, d.horizon ?? "")}`,
-    `Nom : ${d.nom ?? ""}`,
-    `Téléphone : ${d.telephone ?? ""}`,
-    `Email : ${d.email ?? ""}`,
-    d.annonce ? `Annonce concernée : ${d.annonce}` : null,
-    d.message?.trim() ? `Message : ${d.message.trim()}` : null,
-  ].filter((l): l is string => l !== null);
-}
-
 // mailto compacté : mêmes lignes courtes, message tronqué au besoin
 // pour rester sous 1800 caractères d'URL (les handlers mail tronquent
 // souvent au-delà de ~2000) ; le récapitulatif complet reste à
 // l'écran pour la copie.
 function mailtoCompact(d: Record<string, string>, email: string): string {
-  const sujet = `Projet : ${labelDe(NATURES, d.nature ?? "")} (${labelDe(BUDGETS, d.budget ?? "")})`;
-  const base = lignesRecap(d).filter((l) => !l.startsWith("Message :"));
+  const sujet = `Projet : ${lignesRecapProjet(d)[0].replace("Nature du projet : ", "")}`;
+  const base = lignesRecapProjet({ ...d, message: "" });
   const construire = (message: string) =>
     `mailto:${email}?subject=${encodeURIComponent(sujet)}&body=${encodeURIComponent(
       [...base, message ? `Message : ${message}` : null]
@@ -107,6 +99,8 @@ export default function ProjetForm({
   const [etape, setEtape] = useState<Etape>("saisie");
   const [erreurs, setErreurs] = useState<Record<string, string>>({});
   const [donnees, setDonnees] = useState<Record<string, string> | null>(null);
+  // Message libre : éditable jusque dans la confirmation (retours V4).
+  const [message, setMessage] = useState("");
   const [copie, setCopie] = useState<Copie>("repos");
   const [monteA] = useState(() => Date.now());
 
@@ -134,7 +128,7 @@ export default function ProjetForm({
     return d;
   }
 
-  async function envoyer(e: React.FormEvent<HTMLFormElement>) {
+  function preparer(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const d = donneesDuFormulaire(e.currentTarget);
 
@@ -150,20 +144,25 @@ export default function ProjetForm({
       return;
     }
     setErreurs({});
+    setDonnees(d);
+    setCopie("repos");
+    setStatut("repos");
+    setEtape("confirmation");
+  }
 
-    if (!modeAuto) {
-      setDonnees(d);
-      setCopie("repos");
-      setEtape("confirmation");
+  // Données effectivement envoyées : libellés côté rendu, message édité.
+  const donneesFinales = donnees ? { ...donnees, message } : null;
+
+  async function envoyerApi() {
+    if (!donneesFinales) {
       return;
     }
-
     setStatut("envoi");
     try {
       const reponse = await fetch("/api/projet", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(d),
+        body: JSON.stringify(donneesFinales),
       });
       setStatut(reponse.ok ? "ok" : "erreur");
     } catch {
@@ -172,11 +171,13 @@ export default function ProjetForm({
   }
 
   async function copierRecap() {
-    if (!donnees) {
+    if (!donneesFinales) {
       return;
     }
     try {
-      await navigator.clipboard.writeText(lignesRecap(donnees).join("\n"));
+      await navigator.clipboard.writeText(
+        lignesRecapProjet(donneesFinales).join("\n")
+      );
       setCopie("ok");
     } catch {
       setCopie("echec");
@@ -185,10 +186,20 @@ export default function ProjetForm({
 
   if (statut === "ok" && modeAuto) {
     return (
-      <p role="status" className="rounded bg-ecume p-4 font-medium text-marine">
-        Merci, votre projet est bien transmis. Nous revenons vers vous
-        rapidement.
-      </p>
+      <div role="status" className="rounded bg-ecume p-5">
+        <p className="font-medium text-marine">
+          Votre demande est envoyée, nous revenons vers vous rapidement.
+        </p>
+        <p className="mt-3 text-sm text-encre/80">
+          {typoFr("Besoin d'une réponse immédiate ? ")}
+          <a
+            href={`tel:${SITE.telephoneMobileHref}`}
+            className="sonde font-semibold text-azur-2 hover:underline"
+          >
+            {typoFr(`${SITE.responsable} : ${SITE.telephoneMobile}`)}
+          </a>
+        </p>
+      </div>
     );
   }
 
@@ -205,69 +216,131 @@ export default function ProjetForm({
       </p>
     ) : null;
 
+  // Canaux de secours du mode dégradé, réutilisés en cas d'échec API.
+  const canauxSecours = donneesFinales && (
+    <>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <a
+          href={mailtoCompact(donneesFinales, emailContact)}
+          className={modeAuto ? BOUTON_BORD : BOUTON_PLEIN}
+        >
+          Ouvrir dans votre messagerie
+        </a>
+        <button type="button" onClick={copierRecap} className={BOUTON_BORD}>
+          Copier le message
+        </button>
+      </div>
+      <p role="status" className="mt-3 min-h-5 text-sm font-medium text-marine">
+        {copie === "ok" &&
+          typoFr("Message copié. Collez-le dans un email vers l'adresse ci-dessous.")}
+        {copie === "echec" &&
+          typoFr(
+            "Copie automatique impossible : sélectionnez le récapitulatif ci-dessus pour le copier."
+          )}
+      </p>
+      <p className="mt-2 leading-relaxed text-encre/80">
+        {typoFr("Ou contactez-nous directement : ")}
+        <a
+          href={`mailto:${emailContact}`}
+          className="font-semibold text-azur-2 hover:underline"
+        >
+          {emailContact}
+        </a>
+        {typoFr(" ou par téléphone ")}
+        <a
+          href={`tel:${SITE.telephoneMobileHref}`}
+          className="sonde font-semibold text-azur-2 hover:underline"
+        >
+          {SITE.telephoneMobile}
+        </a>
+        .
+      </p>
+    </>
+  );
+
   return (
     <div>
-      {etape === "confirmation" && donnees && (
+      {etape === "confirmation" && donneesFinales && (
         <section aria-labelledby="confirmation-titre">
           <h2
             id="confirmation-titre"
             className="text-display-s font-semibold text-marine"
           >
-            Votre message est prêt
+            {modeAuto ? "Vérifiez votre demande" : "Votre message est prêt"}
           </h2>
           <p className="mt-2 leading-relaxed text-encre/80">
             {typoFr(
-              "Vérifiez le récapitulatif, puis envoyez-le par le canal de votre choix :"
+              modeAuto
+                ? "Relisez le récapitulatif, ajustez le message si besoin, puis envoyez :"
+                : "Vérifiez le récapitulatif, puis envoyez-le par le canal de votre choix :"
             )}
           </p>
           <div className="mt-4 whitespace-pre-line rounded-lg bg-ecume p-4 text-sm leading-relaxed text-encre/90">
-            {typoFr(lignesRecap(donnees).join("\n"))}
+            {typoFr(lignesRecapProjet({ ...donneesFinales, message: "" }).join("\n"))}
           </div>
-          <div className="mt-5 flex flex-wrap gap-3">
-            <a href={mailtoCompact(donnees, emailContact)} className={BOUTON_PLEIN}>
-              Ouvrir dans votre messagerie
-            </a>
-            <button type="button" onClick={copierRecap} className={BOUTON_BORD}>
-              Copier le message
-            </button>
-            <button
-              type="button"
-              onClick={() => setEtape("saisie")}
-              className={BOUTON_BORD}
-            >
-              Modifier ma saisie
-            </button>
+          <div className="mt-4">
+            <label htmlFor="message-final" className={LIBELLE}>
+              Votre message (modifiable avant envoi)
+            </label>
+            <textarea
+              id="message-final"
+              rows={4}
+              maxLength={4000}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className={CHAMP}
+            />
           </div>
-          <p role="status" className="mt-3 min-h-5 text-sm font-medium text-marine">
-            {copie === "ok" &&
-              typoFr("Message copié. Collez-le dans un email vers l'adresse ci-dessous.")}
-            {copie === "echec" &&
-              typoFr(
-                "Copie automatique impossible : sélectionnez le récapitulatif ci-dessus pour le copier."
+
+          {modeAuto ? (
+            <>
+              <div className="mt-5 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={envoyerApi}
+                  disabled={statut === "envoi"}
+                  className={BOUTON_PLEIN}
+                >
+                  {statut === "envoi" ? "Envoi en cours…" : "Envoyer ma demande"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEtape("saisie")}
+                  className={BOUTON_BORD}
+                >
+                  Modifier ma saisie
+                </button>
+              </div>
+              {statut === "erreur" && (
+                <div className="mt-4 rounded border border-red-700/40 bg-white p-4">
+                  <p role="alert" className="font-medium text-red-700">
+                    {typoFr(
+                      "L'envoi automatique a échoué. Votre saisie est conservée : utilisez un canal de secours ci-dessous."
+                    )}
+                  </p>
+                  {canauxSecours}
+                </div>
               )}
-          </p>
-          <p className="mt-2 leading-relaxed text-encre/80">
-            {typoFr("Ou contactez-nous directement : ")}
-            <a
-              href={`mailto:${emailContact}`}
-              className="font-semibold text-azur-2 hover:underline"
-            >
-              {emailContact}
-            </a>
-            {typoFr(" ou par téléphone ")}
-            <a
-              href={`tel:${SITE.telephoneMobileHref}`}
-              className="sonde font-semibold text-azur-2 hover:underline"
-            >
-              {SITE.telephoneMobile}
-            </a>
-            .
-          </p>
+            </>
+          ) : (
+            <>
+              {canauxSecours}
+              <p className="mt-4">
+                <button
+                  type="button"
+                  onClick={() => setEtape("saisie")}
+                  className={BOUTON_BORD}
+                >
+                  Modifier ma saisie
+                </button>
+              </p>
+            </>
+          )}
         </section>
       )}
 
       <form
-        onSubmit={envoyer}
+        onSubmit={preparer}
         noValidate
         className={etape === "confirmation" ? "hidden" : "space-y-4"}
       >
@@ -295,14 +368,13 @@ export default function ProjetForm({
           <label htmlFor="type_recherche" className={LIBELLE}>
             Type de bateau recherché (optionnel)
           </label>
-          <input
-            id="type_recherche"
-            name="type_recherche"
-            type="text"
-            maxLength={120}
-            placeholder="Vedette 10 à 12 m, flybridge…"
-            className={CHAMP}
-          />
+          <select id="type_recherche" name="type_recherche" className={CHAMP}>
+            {TYPES_RECHERCHE.map((o) => (
+              <option key={o.valeur} value={o.valeur}>
+                {o.label}
+              </option>
+            ))}
+          </select>
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
@@ -359,29 +431,23 @@ export default function ProjetForm({
           <label htmlFor="message" className={LIBELLE}>
             Message (optionnel)
           </label>
-          <textarea id="message" name="message" rows={4} maxLength={4000} className={CHAMP} />
+          <textarea
+            id="message"
+            name="message"
+            rows={4}
+            maxLength={4000}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            className={CHAMP}
+          />
         </div>
 
         {cleTurnstile && (
           <div className="cf-turnstile" data-sitekey={cleTurnstile} />
         )}
 
-        {statut === "erreur" && (
-          <p role="alert" className="text-sm font-medium text-red-700">
-            L&apos;envoi a échoué. Merci de réessayer ou de nous appeler
-            directement.
-          </p>
-        )}
-        <button
-          type="submit"
-          disabled={statut === "envoi"}
-          className="rounded bg-azur-2 px-6 py-3 font-semibold text-white hover:bg-marine disabled:opacity-60"
-        >
-          {modeAuto
-            ? statut === "envoi"
-              ? "Envoi en cours…"
-              : "Envoyer mon projet"
-            : "Préparer mon message"}
+        <button type="submit" className="rounded bg-azur-2 px-6 py-3 font-semibold text-white hover:bg-marine">
+          {modeAuto ? "Vérifier ma demande" : "Préparer mon message"}
         </button>
         <p className="text-xs leading-relaxed text-encre/70">
           Ces informations servent uniquement à répondre à votre demande.

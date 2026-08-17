@@ -52,9 +52,9 @@ Vercel > projet > Settings > Environment Variables (Production) :
 
 - [ ] `RESEND_API_KEY` : clé API créée dans Resend.
 - [ ] `CONTACT_TO_EMAIL` : `contact@nauticeayachting.fr`.
-- [ ] `CONTACT_FROM_EMAIL` : `site@nauticeayachting.fr` (adresse
-      d'envoi sur le domaine vérifié ; pas besoin de boîte mail, c'est
-      un expéditeur).
+- [ ] `EMAIL_FROM` : `site@nauticeayachting.fr` (adresse d'envoi sur
+      le domaine vérifié ; pas besoin de boîte mail, c'est un
+      expéditeur ; obligatoire, aucune valeur par défaut dans le code).
 - [ ] `NEXT_PUBLIC_CONTACT_EMAIL` : `contact@nauticeayachting.fr`.
 - [ ] Redéployer (Deployments > Redeploy) pour prendre les variables.
 

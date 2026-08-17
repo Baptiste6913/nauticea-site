@@ -19,7 +19,10 @@ const TAILLE_MAX_CORPS = 16 * 1024;
 export async function POST(request: Request) {
   const cle = process.env.RESEND_API_KEY;
   const destinataire = process.env.CONTACT_TO_EMAIL;
-  if (!cle || !destinataire) {
+  // Expéditeur : variable EMAIL_FROM exclusivement, aucune valeur en
+  // dur (alignement retours V4, même règle que /api/projet).
+  const expediteur = process.env.EMAIL_FROM;
+  if (!cle || !destinataire || !expediteur) {
     return NextResponse.json({ erreur: "Service indisponible." }, { status: 503 });
   }
 
@@ -66,10 +69,6 @@ export async function POST(request: Request) {
   ]
     .filter((l): l is string => l !== null)
     .join("\n");
-
-  // Domaine expéditeur : nauticeayachting.fr exclusivement.
-  const expediteur =
-    process.env.CONTACT_FROM_EMAIL ?? "site@nauticeayachting.fr";
 
   const reponse = await fetch("https://api.resend.com/emails", {
     method: "POST",

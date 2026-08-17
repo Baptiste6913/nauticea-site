@@ -19,7 +19,12 @@ export default async function Contact({
   searchParams: Promise<{ annonce?: string }>;
 }) {
   const { annonce } = await searchParams;
-  const formulaireActif = Boolean(process.env.RESEND_API_KEY);
+  // Détection serveur, mêmes variables que la route (retours V4).
+  const formulaireActif = Boolean(
+    process.env.RESEND_API_KEY &&
+      process.env.CONTACT_TO_EMAIL &&
+      process.env.EMAIL_FROM
+  );
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">

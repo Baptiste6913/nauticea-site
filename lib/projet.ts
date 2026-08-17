@@ -34,3 +34,40 @@ export function valeursDe(
 ): string[] {
   return options.map((o) => o.valeur);
 }
+
+// Types de bateau recherchés (retours client V4) : champ à choix dont
+// les libellés viennent de la taxonomie réelle du site (sous-catégories
+// du corpus + catégorie voiliers). La valeur vide = pas de préférence,
+// la ligne est alors omise du récapitulatif.
+export const TYPES_RECHERCHE = [
+  { valeur: "", label: "Peu importe / à définir" },
+  { valeur: "vedette", label: "Vedette" },
+  { valeur: "flybridge", label: "Flybridge" },
+  { valeur: "coupe", label: "Coupé" },
+  { valeur: "trawler", label: "Trawler" },
+  { valeur: "motor-yacht", label: "Motor yacht" },
+  { valeur: "semi-rigide", label: "Semi-rigide" },
+  { valeur: "catamaran", label: "Catamaran" },
+  { valeur: "voilier", label: "Voilier" },
+] as const;
+
+// Récapitulatif du projet, partagé entre l'écran de confirmation, le
+// mailto, le message copié et le corps de l'email API : une seule
+// source, uniquement des libellés humains (retours client V4).
+export function lignesRecapProjet(
+  d: Record<string, string | undefined>
+): string[] {
+  return [
+    `Nature du projet : ${labelDe(NATURES, d.nature ?? "")}`,
+    d.type_recherche
+      ? `Type recherché : ${labelDe(TYPES_RECHERCHE, d.type_recherche)}`
+      : null,
+    `Budget : ${labelDe(BUDGETS, d.budget ?? "")}`,
+    `Horizon : ${labelDe(HORIZONS, d.horizon ?? "")}`,
+    `Nom : ${d.nom ?? ""}`,
+    `Téléphone : ${d.telephone ?? ""}`,
+    `Email : ${d.email ?? ""}`,
+    d.annonce ? `Annonce concernée : ${d.annonce}` : null,
+    d.message?.trim() ? `Message : ${d.message.trim()}` : null,
+  ].filter((l): l is string => l !== null);
+}
