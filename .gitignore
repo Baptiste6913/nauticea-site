@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# Gabarit sans secret, versionné à dessein : le README s'y réfère, et le
+# harnais le scanne. Sans lui, npm run verifier échoue sur un clone neuf.
+!.env.example
 
 # vercel
 .vercel
