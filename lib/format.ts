@@ -7,18 +7,41 @@ export function typoFr(texte: string): string {
   return texte.replace(/ ([:;!?»])/g, `${FINE}$1`).replace(/« /g, `«${FINE}`);
 }
 
+// Devises acceptées à l'affichage (durcissement du flux, 17/08) : source de
+// vérité unique, partagée avec le parseur du flux Boats Group. Une valeur
+// hors liste ne doit jamais faire lever d'exception au rendu, car
+// Intl.NumberFormat refuse un code devise inconnu.
+export const DEVISES_AUTORISEES = ["EUR", "GBP", "USD", "CHF"] as const;
+
+export function deviseAutorisee(devise: unknown): boolean {
+  return (
+    typeof devise === "string" &&
+    (DEVISES_AUTORISEES as readonly string[]).includes(devise)
+  );
+}
+
 export function formatPrix(prix: number | null, devise = "EUR"): string {
-  if (prix === null) {
+  // Prix absent, non fini ou nul, ou devise non reconnue : on n'affiche
+  // aucun montant plutôt qu'une valeur douteuse ou une page en erreur.
+  if (prix === null || !Number.isFinite(prix) || prix <= 0) {
     return "Prix sur demande";
   }
-  const montant = new Intl.NumberFormat("fr-FR", {
-    style: "currency",
-    currency: devise,
-    maximumFractionDigits: 0,
-  }).format(prix);
-  // Intl utilise déjà U+202F pour les milliers ; on normalise l'espace
-  // avant le symbole en insécable.
-  return montant.replace(/ €$/, " €");
+  if (!deviseAutorisee(devise)) {
+    return "Prix sur demande";
+  }
+  try {
+    const montant = new Intl.NumberFormat("fr-FR", {
+      style: "currency",
+      currency: devise,
+      maximumFractionDigits: 0,
+    }).format(prix);
+    // Intl utilise déjà U+202F pour les milliers ; on normalise l'espace
+    // avant le symbole en insécable.
+    return montant.replace(/ €$/, " €");
+  } catch {
+    // Filet de sécurité : aucune donnée ne peut casser un rendu.
+    return "Prix sur demande";
+  }
 }
 
 export function formatLongueur(metres: string): string {

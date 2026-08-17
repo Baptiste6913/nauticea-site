@@ -38,6 +38,35 @@ Dès que le secret existe :
 - [ ] Le run télécharge le flux, le normalise et committe
       `corpus-nauticea/bateaux-boatsgroup.json` si le contenu change.
 
+## 3 bis. Autoriser les domaines d'images (après le premier run)
+
+Le flux est une source externe : par défaut **aucune image n'est
+téléchargée**, tant que les domaines n'ont pas été autorisés
+explicitement (durcissement du 17/08).
+
+- [ ] Lancer une première synchronisation à la main (Actions >
+      Synchronisation flux Boats Group > Run workflow).
+- [ ] Lire la fin du journal du run : il affiche les hôtes d'images
+      rencontrés et la ligne à recopier, par exemple
+      `FEED_IMAGE_HOSTS=images.boatsgroup.com`.
+- [ ] Vérifier que ces domaines appartiennent bien à Boats Group, puis
+      les poser dans Settings > Secrets and variables > Actions >
+      onglet **Variables** (pas Secrets, ce n'est pas confidentiel), nom
+      `FEED_IMAGE_HOSTS`, valeurs séparées par des virgules.
+- [ ] Relancer le workflow : les photos sont alors rapatriées dans
+      `public/annonces/<slug>/` et versionnées.
+
+Les bornes appliquées à chaque synchronisation, non configurables sans
+modifier le code : 5 Mo par image, 15 secondes par image, 48 photos par
+annonce, 50 Mo et 120 secondes pour le flux lui-même. Une image qui
+dépasse une borne ou qui échoue est simplement absente, signalée au
+rapport, et n'interrompt jamais la synchronisation.
+
+Le rapport `corpus-nauticea/rapport-sync-flux.json`, committé à chaque
+run, liste les anomalies : devise inconnue (le prix passe alors en
+« Prix sur demande »), hôte refusé, schéma d'URL refusé, photos
+tronquées, téléchargement échoué.
+
 ## 4. Valider le premier run (critères)
 
 - [ ] Le nombre d'annonces du JSON correspond au stock affiché sur la
