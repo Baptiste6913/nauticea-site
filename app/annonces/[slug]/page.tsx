@@ -56,7 +56,11 @@ function jsonLdProduct(boat: NonNullable<ReturnType<typeof getBoatBySlug>>) {
             boat.etat === "neuf"
               ? "https://schema.org/NewCondition"
               : "https://schema.org/UsedCondition",
-          availability: "https://schema.org/InStock",
+          // Bateau vendu : l'annonce reste indexée, mais la disponibilité
+          // doit dire la vérité aux moteurs de recherche.
+          availability: boat.vendu
+            ? "https://schema.org/SoldOut"
+            : "https://schema.org/InStock",
           seller: { "@type": "Organization", name: SITE.nom },
         },
       },
@@ -113,9 +117,16 @@ export default async function DetailAnnonce({ params }: Props) {
           </Surface>
         </div>
         <div>
-          <p className="inline-block rounded-none border-l-2 border-azur bg-marine px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
-            {etatLabel}
-          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="inline-block rounded-none border-l-2 border-azur bg-marine px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
+              {etatLabel}
+            </p>
+            {boat.vendu && (
+              <p className="inline-block rounded-none border-l-2 border-marine bg-white px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-marine">
+                Vendu
+              </p>
+            )}
+          </div>
           <h1 className="mt-2 text-display-l font-bold text-marine md:text-display-xl">
             {boat.titre}
           </h1>
@@ -167,36 +178,57 @@ export default async function DetailAnnonce({ params }: Props) {
               </ul>
             </>
           )}
-          <Surface niveau="flotte" className="mt-8 rounded-lg bg-ecume p-5">
-            <h2 className="text-display-s font-semibold text-marine">
-              {typoFr("Ce bateau vous intéresse ?")}
-            </h2>
-            <p className="mt-1 text-sm text-encre/80">
-              {typoFr(`Contact : ${SITE.responsable}`)}
-            </p>
-            <p className="mt-2 text-sm">
-              <a
-                href={`tel:${SITE.telephoneMobileHref}`}
-                className="sonde font-semibold text-azur-2 hover:underline"
-              >
-                {SITE.telephoneMobile}
-              </a>
-            </p>
-            <div className="mt-3 flex flex-wrap gap-2">
-              <Link
-                href={`/projet?annonce=${boat.slug}`}
-                className="inline-block rounded bg-azur-2 px-4 py-2 text-sm font-semibold text-white hover:bg-marine"
-              >
-                Décrire votre projet
-              </Link>
-              <Link
-                href={`/contact?annonce=${boat.slug}`}
-                className="inline-block rounded border border-marine px-4 py-2 text-sm font-semibold text-marine hover:bg-white"
-              >
-                Poser une question
-              </Link>
-            </div>
-          </Surface>
+          {boat.vendu ? (
+            <Surface niveau="flotte" className="mt-8 rounded-lg bg-ecume p-5">
+              <h2 className="text-display-s font-semibold text-marine">
+                Bateau vendu
+              </h2>
+              <p className="mt-1 text-sm text-encre/80">
+                {typoFr(
+                  "Cette annonce reste en ligne pour mémoire. Le bateau n'est plus disponible."
+                )}
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  href="/annonces"
+                  className="inline-block rounded bg-azur-2 px-4 py-2 text-sm font-semibold text-white hover:bg-marine"
+                >
+                  Voir les bateaux disponibles
+                </Link>
+              </div>
+            </Surface>
+          ) : (
+            <Surface niveau="flotte" className="mt-8 rounded-lg bg-ecume p-5">
+              <h2 className="text-display-s font-semibold text-marine">
+                {typoFr("Ce bateau vous intéresse ?")}
+              </h2>
+              <p className="mt-1 text-sm text-encre/80">
+                {typoFr(`Contact : ${SITE.responsable}`)}
+              </p>
+              <p className="mt-2 text-sm">
+                <a
+                  href={`tel:${SITE.telephoneMobileHref}`}
+                  className="sonde font-semibold text-azur-2 hover:underline"
+                >
+                  {SITE.telephoneMobile}
+                </a>
+              </p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <Link
+                  href={`/projet?annonce=${boat.slug}`}
+                  className="inline-block rounded bg-azur-2 px-4 py-2 text-sm font-semibold text-white hover:bg-marine"
+                >
+                  Décrire votre projet
+                </Link>
+                <Link
+                  href={`/contact?annonce=${boat.slug}`}
+                  className="inline-block rounded border border-marine px-4 py-2 text-sm font-semibold text-marine hover:bg-white"
+                >
+                  Poser une question
+                </Link>
+              </div>
+            </Surface>
+          )}
         </div>
       </div>
       {boat.description && (

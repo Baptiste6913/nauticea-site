@@ -51,6 +51,13 @@ export default function BoatCardDA({
             <p className="absolute left-3 top-3 rounded-none border-l-2 border-azur bg-marine px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-white">
               {ETIQUETTES[boat.etat] ?? "État sur demande"}
             </p>
+            {/* Bateau vendu : même géométrie que le badge d'état, en
+                négatif, sans couleur nouvelle. L'annonce reste listée. */}
+            {boat.vendu && (
+              <p className="absolute right-3 top-3 rounded-none border-l-2 border-marine bg-white px-2 py-0.5 text-xs font-semibold uppercase tracking-wide text-marine">
+                Vendu
+              </p>
+            )}
           </div>
           <div className="p-4">
             <h2 className="text-display-s font-semibold text-marine group-hover:text-azur-2">

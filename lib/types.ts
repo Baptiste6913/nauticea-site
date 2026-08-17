@@ -18,7 +18,17 @@ export interface Boat {
   contact: string;
   ancienne_url: string;
   updated_at: string;
-  source: "corpus" | "boatsgroup";
+  source: "corpus" | "boatsgroup" | "fiche-pdf";
+  /**
+   * Bateau vendu : l'annonce reste listée et indexée, avec un bandeau et
+   * sans appel à projet. Absent vaut disponible.
+   */
+  vendu?: boolean;
+  /**
+   * Photos sous 800 pixels, signalées à l'ingestion. Sert au rapport de la
+   * demande de fusion, jamais à l'affichage.
+   */
+  photos_basse_def?: number;
 }
 
 export interface PageStatique {

@@ -209,6 +209,8 @@ try {
     ["ancien site (assets)", /nauticeayachting\.fr\/(images|Video|templates|media)/],
   ];
   const DOSSIERS_SOURCES = ["app", "components", "lib", "scripts", "docs", "design", "content"];
+  // Fichiers de racine scannés ; un absent est ignoré plutôt que fatal,
+  // car le harnais doit tourner sur un clone neuf comme sur un poste.
   const FICHIERS_RACINE = ["README.md", ".env.example", "next.config.ts", "package.json"];
   function fichiersDe(dossier) {
     const resultat = [];
@@ -227,7 +229,7 @@ try {
   }
   const sources = [
     ...DOSSIERS_SOURCES.flatMap((d) => fichiersDe(path.join(RACINE, d))),
-    ...FICHIERS_RACINE.map((f) => path.join(RACINE, f)),
+    ...FICHIERS_RACINE.map((f) => path.join(RACINE, f)).filter((f) => fs.existsSync(f)),
   ].filter(
     (f) =>
       !f.includes("design/qa/") &&
