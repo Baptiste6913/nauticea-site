@@ -46,8 +46,14 @@ jobs:
         if: steps.garde.outputs.actif == 'true'
         env:
           FEED_URL: ${{ secrets.FEED_URL }}
+          # Liste blanche des hôtes d'images du flux, à renseigner d'après
+          # le premier flux réel (le rapport de synchronisation affiche les
+          # hôtes rencontrés). Absente : toutes les images sont refusées.
+          FEED_IMAGE_HOSTS: ${{ vars.FEED_IMAGE_HOSTS }}
         run: |
-          curl -sSf "$FEED_URL" -o /tmp/feed.xml
+          # Téléchargement borné en durée et en taille : un flux hostile ou
+          # une URL qui ne répond pas ne doit ni bloquer ni remplir le disque.
+          curl -sSf --max-time 120 --max-filesize 50000000 "$FEED_URL" -o /tmp/feed.xml
           node --experimental-strip-types scripts/normalise-feed.mts /tmp/feed.xml corpus-nauticea/bateaux-boatsgroup.json
 
       - name: Committer si diff
@@ -55,7 +61,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add corpus-nauticea/bateaux-boatsgroup.json
+          git add corpus-nauticea/bateaux-boatsgroup.json corpus-nauticea/rapport-sync-flux.json public/annonces
           if git diff --cached --quiet; then
             echo "Aucun changement dans le flux."
           else
