@@ -1,12 +1,12 @@
 {
-  "date": "2026-08-17T12:56:27.636Z",
+  "date": "2026-08-17T14:11:22.736Z",
   "statut": "OK",
   "resume": {
     "routes_sitemap": 44,
     "liens_internes_verifies": 717,
     "images_verifiees": 945,
     "redirections": 48,
-    "fichiers_sources_scannes": 72,
+    "fichiers_sources_scannes": 73,
     "uses_workflows_verifies": 2
   },
   "echecs": []
