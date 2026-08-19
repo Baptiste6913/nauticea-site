@@ -465,8 +465,13 @@ test("annonce nouvelle : toutes les photos de la fiche sont écrites", () => {
 test("re-dépôt du Monte Carlo 42 : aucune photo perdue ni dégradée", () => {
   // Cas réel du site : 28 photos en ligne, la fiche n'en offre que 24 et
   // de moindre résolution, sauf la photo de tête.
-  const enLigne = [];
+  //
+  // Le test énonce l'invariant, pas un compte : la galerie du dépôt est
+  // un état mutable, qu'une ingestion précédente a pu améliorer. Compter
+  // les remplacements rendait ce test dépendant de l'ordre des étapes, et
+  // il échouait dans le workflow, où l'ingestion tourne avant les tests.
   const dossier = path.join(process.cwd(), "public", "annonces", "beneteau-monte-carlo-42-543");
+  const enLigne = [];
   for (const nom of fs.readdirSync(dossier).sort()) {
     const rang = /^(\d+)\.jpg$/.exec(nom);
     if (!rang) {
@@ -482,14 +487,57 @@ test("re-dépôt du Monte Carlo 42 : aucune photo perdue ni dégradée", () => {
   const r = lirePdf(fixture("2010-Beneteau-Monte_Carlo_42.pdf"));
   const { retenues } = trierPhotos(r.document.images);
   const decisions = arbitrerPhotos(enLigne, retenues);
+
   assert.equal(decisions.length, 28, "aucune photo ne disparaît");
-  assert.equal(decisions.filter((d) => d.decision === "remplacee").length, 1);
   assert.equal(decisions.filter((d) => d.decision === "nouvelle").length, 0);
+  const parRang = new Map(enLigne.map((p) => [p.rang, p]));
   for (const d of decisions) {
+    const avant = parRang.get(d.rang);
     if (d.decision === "remplacee") {
-      assert.match(d.detail, /la fiche fait mieux/);
+      // Un remplacement n'est permis que vers une résolution meilleure.
+      assert.match(d.detail, /la fiche fait mieux|illisible/);
+      const apres = d.aEcrire;
+      assert.ok(apres, `${d.nom} : remplacée sans photo à écrire`);
+      const coteAvant = avant?.dimensions
+        ? Math.max(avant.dimensions.largeur, avant.dimensions.hauteur)
+        : 0;
+      const coteApres = Math.max(apres.image.largeur, apres.image.hauteur);
+      assert.ok(coteApres > coteAvant, `${d.nom} : ${coteApres} n'améliore pas ${coteAvant}`);
+    } else {
+      assert.equal(d.aEcrire, undefined, `${d.nom} : conservée mais réécrite`);
     }
   }
+});
+
+test("arbitrage idempotent : une deuxième passe ne change plus rien", () => {
+  // Propriété qui compte pour le canal : redéposer deux fois la même
+  // fiche doit laisser la galerie identique après la première passe.
+  const r = lirePdf(fixture("2010-Beneteau-Monte_Carlo_42.pdf"));
+  const { retenues } = trierPhotos(r.document.images);
+  const depart = [
+    { rang: 1, nom: "01.jpg", dimensions: { largeur: 700, hauteur: 525 } },
+    { rang: 2, nom: "02.jpg", dimensions: { largeur: 700, hauteur: 525 } },
+  ];
+  const premiere = arbitrerPhotos(depart, retenues.slice(0, 2));
+  // État de la galerie après la première passe.
+  const apres = depart.map((p) => {
+    const d = premiere.find((x) => x.rang === p.rang);
+    return d?.aEcrire
+      ? {
+          ...p,
+          dimensions: {
+            largeur: d.aEcrire.image.largeur,
+            hauteur: d.aEcrire.image.hauteur,
+          },
+        }
+      : p;
+  });
+  const seconde = arbitrerPhotos(apres, retenues.slice(0, 2));
+  assert.equal(
+    seconde.filter((d) => d.aEcrire).length,
+    0,
+    "la deuxième passe ne doit réécrire aucune photo"
+  );
 });
 
 // ---------- 5. Annonce ----------
