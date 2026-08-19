@@ -13,9 +13,13 @@ import {
   A_CONFIRMER,
   LIBELLES_RECONNUS,
   conditionDepuisFiche,
+  documentsDeFiches,
   lireFichePdf,
+  lireFicheDuDocument,
+  lireFichesPdf,
   longueurEnMetres,
   montantDepuisFiche,
+  pagesDeDebutDeFiche,
   sansPiedDePage,
 } from "../lib/ingest/fiche-pdf.ts";
 import {
@@ -764,4 +768,108 @@ test("fiche valide mais sans texte exploitable : refus explicite", () => {
   const r = lireFichePdf(pdfSynthetique(2));
   assert.equal(r.ok, false);
   assert.match(r.erreur, /aucun texte exploitable/);
+});
+
+// ---------- 9. PDF portant plusieurs bateaux ----------
+//
+// Bruno exporte parfois plusieurs fiches dans un seul PDF. Lu d'un bloc,
+// un tel fichier donnait une annonce dont la galerie contenait les photos
+// du bateau suivant : constat du 19/08 sur un envoi réel qui mêlait un
+// Sealine F42/5 et un Cranchi Endurance 41.
+
+const DEPOT_GROUPE = path.join(
+  process.cwd(),
+  "ingest",
+  "archive",
+  "2005-Sealine-F42_5-et-2007-Cranchi-Endurance-41.pdf"
+);
+
+/** Simule un export par lots en enchaînant deux fiches réelles. */
+function enchainer(a, b) {
+  const decalage = a.pages;
+  const page = (o) => ({ ...o, page: o.page + decalage });
+  return {
+    pages: a.pages + b.pages,
+    lignes: [...a.lignes, ...b.lignes.map(page)],
+    glyphes: [...a.glyphes, ...b.glyphes.map(page)],
+    images: [
+      ...a.images,
+      ...b.images.map((i) => ({ ...i, page: i.page + decalage, rang: i.rang + a.images.length })),
+    ],
+    avertissements: [...a.avertissements, ...b.avertissements],
+  };
+}
+
+test("une fiche seule reste une fiche : aucun découpage parasite", () => {
+  for (const nom of TOUTES) {
+    const doc = lirePdf(fixture(nom)).document;
+    assert.deepEqual(pagesDeDebutDeFiche(doc), [1], nom);
+    const parts = documentsDeFiches(doc);
+    assert.equal(parts.length, 1, nom);
+    assert.equal(parts[0].images.length, doc.images.length, `${nom} : photos perdues`);
+  }
+});
+
+test("deux fiches enchaînées : chaque bateau ne voit que ses pages", () => {
+  const premier = lirePdf(fixture("2010-Beneteau-Monte_Carlo_42.pdf")).document;
+  const second = lirePdf(fixture("2023-RYCK-280.pdf")).document;
+  const lot = enchainer(premier, second);
+
+  assert.deepEqual(pagesDeDebutDeFiche(lot), [1, premier.pages + 1]);
+  const parts = documentsDeFiches(lot);
+  assert.equal(parts.length, 2);
+  assert.equal(parts[0].images.length, premier.images.length, "photos du premier");
+  assert.equal(parts[1].images.length, second.images.length, "photos du second");
+  assert.equal(
+    parts[0].images.length + parts[1].images.length,
+    lot.images.length,
+    "aucune photo n'est perdue au découpage"
+  );
+
+  const a = lireFicheDuDocument(parts[0]);
+  const b = lireFicheDuDocument(parts[1]);
+  assert.ok(a.ok && b.ok);
+  assert.equal(a.fiche.marque, "Beneteau");
+  assert.equal(b.fiche.marque, "RYCK");
+  // La contamination se voyait d'abord au texte : le prix du second
+  // bateau n'a rien à faire dans la fiche du premier.
+  assert.notEqual(a.fiche.prix, b.fiche.prix);
+});
+
+test("dépôt réel groupé : le Sealine ne prend pas les photos du Cranchi", () => {
+  const octets = new Uint8Array(fs.readFileSync(DEPOT_GROUPE));
+  const lecture = lireFichesPdf(octets);
+  assert.ok(lecture.ok, "le dépôt groupé doit être lisible");
+  assert.equal(lecture.fiches.length, 2, "deux bateaux dans ce PDF");
+
+  const [sealine, cranchi] = lecture.fiches;
+  assert.equal(sealine.fiche.marque, "Sealine");
+  assert.equal(sealine.fiche.modele, "F42/5");
+  assert.equal(cranchi.fiche.marque, "Cranchi");
+  assert.equal(cranchi.fiche.modele, "Endurance 41");
+  assert.equal(sealine.rang, 1);
+  assert.equal(cranchi.total, 2);
+
+  // Les pages ne se chevauchent jamais : c'est la garantie de fond.
+  const pagesSealine = new Set(sealine.document.images.map((i) => i.page));
+  const pagesCranchi = new Set(cranchi.document.images.map((i) => i.page));
+  for (const p of pagesSealine) {
+    assert.ok(!pagesCranchi.has(p), `page ${p} attribuée aux deux bateaux`);
+  }
+
+  const photosSealine = trierPhotos(sealine.document.images).retenues.length;
+  const photosCranchi = trierPhotos(cranchi.document.images).retenues.length;
+  assert.equal(photosSealine, 37);
+  assert.equal(photosCranchi, 30);
+});
+
+test("lireFichePdf sur un PDF groupé rend le premier bateau, jamais un mélange", () => {
+  const octets = new Uint8Array(fs.readFileSync(DEPOT_GROUPE));
+  const r = lireFichePdf(octets);
+  assert.ok(r.ok);
+  assert.equal(r.fiche.marque, "Sealine");
+  // Le défaut d'origine : 67 photos au lieu de 37, dont 30 d'un autre
+  // bateau. Le compte est la preuve la plus directe.
+  assert.equal(trierPhotos(r.document.images).retenues.length, 37);
+  assert.equal(r.fiche.pages, 11);
 });

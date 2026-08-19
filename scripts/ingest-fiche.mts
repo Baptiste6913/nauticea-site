@@ -14,7 +14,8 @@
 // Aucune étape ne modifie le corpus historique ni redirects.csv.
 import fs from "node:fs";
 import path from "node:path";
-import { lireFichePdf } from "../lib/ingest/fiche-pdf.ts";
+import { lireFichesPdf, type FichePdf } from "../lib/ingest/fiche-pdf.ts";
+import type { DocumentPdf } from "../lib/ingest/pdf.ts";
 import {
   arbitrerPhotos,
   dimensionsJpeg,
@@ -69,321 +70,404 @@ if (!fs.existsSync(chemin)) {
   usage(`fichier introuvable : ${chemin}`);
 }
 
-const lecture = lireFichePdf(new Uint8Array(fs.readFileSync(chemin)));
+// Chemin confirmé existant : figé ici, car le rétrécissement de type ne
+// traverse pas la frontière de fonction.
+const cheminFiche: string = chemin;
+
+const lecture = lireFichesPdf(new Uint8Array(fs.readFileSync(chemin)));
 if (!lecture.ok) {
   // Rejet propre : message explicite, aucune exception, aucun fichier
   // écrit. Le workflow s'arrête ici et le PDF reste où il est.
   console.error(`fiche refusée : ${lecture.erreur}`);
   process.exit(2);
 }
-const { fiche, document } = lecture;
+const bateaux = lecture.fiches;
+if (slugImpose !== null && bateaux.length > 1) {
+  // --slug désigne une annonce précise : il n'a pas de sens quand le PDF
+  // en apporte plusieurs, et l'appliquer au premier venu écraserait
+  // peut-être la mauvaise annonce.
+  console.error(
+    `fiche refusée : le PDF porte ${bateaux.length} bateaux, --slug ne peut en désigner qu'un. Déposez une fiche par bateau pour imposer un slug.`
+  );
+  process.exit(4);
+}
 
 // Annonces déjà publiées, corpus historique compris : c'est là qu'on
 // cherche si le bateau existe, pour conserver son slug et ses URL.
 const { getBoats } = await import("../lib/sources/corpus.ts");
 const existantes: Boat[] = getBoats();
 
-let existante: Boat | undefined;
-const notesRapprochement: string[] = [];
-if (slugImpose !== null) {
-  existante = existantes.find((b) => b.slug === slugImpose);
-  if (!existante) {
+interface Resume {
+  slug: string;
+  nouvelle: boolean;
+  photos: number;
+  photosBasseDef: number;
+  photosEcartees: number;
+  photosPubliees: number;
+  photosNouvelles: number;
+  photosRemplacees: number;
+  photosConservees: number;
+  aConfirmer: number;
+  rapport: string;
+}
+
+const resumes: Resume[] = [];
+const slugsVus = new Set<string>();
+for (const lu of bateaux) {
+  const resume = traiterFiche(lu.fiche, lu.document, lu.rang, lu.total);
+  if (slugsVus.has(resume.slug)) {
+    // Deux fiches du même PDF pour le même bateau : la seconde écraserait
+    // la première en silence.
     console.error(
-      `annonce imposée « ${slugImpose} » introuvable : le slug est la fin de l'URL après /annonces/`
+      `fiche refusée : le PDF porte deux fois le même bateau (« ${resume.slug} »). Déposez une fiche par bateau.`
     );
-    process.exit(3);
+    process.exit(2);
   }
-  notesRapprochement.push(
-    `annonce cible imposée à la main : « ${slugImpose} »`
-  );
-} else {
-  const rapprochement = rapprocher(fiche, existantes);
-  if (rapprochement.ambigues) {
-    // Deux annonces indiscernables : choisir écraserait peut-être la
-    // mauvaise. On rend la main avec les éléments de décision.
-    console.error(
-      `fiche refusée : ${rapprochement.ambigues.length} annonces en ligne portent la même marque et le même modèle, et l'année de la fiche (${fiche.annee}) ne tranche pas.`
-    );
-    for (const c of rapprochement.ambigues) {
-      console.error(
-        `  candidate : ${c.slug} (${c.etat}, ${
-          c.prix === null ? "prix sur demande" : `${c.prix} ${c.devise}`
-        }, année ${c.specs["Année"] ?? "inconnue"})`
-      );
-    }
-    console.error(
-      "Relancez en désignant l'annonce : --slug <slug>, ou distinguez les modèles dans BoatWizard."
-    );
-    process.exit(4);
-  }
-  existante = rapprochement.annonce;
-  if (rapprochement.note) {
-    notesRapprochement.push(rapprochement.note);
-  }
-  if (!existante) {
-    // Bateau tenu pour nouveau : reste à écarter le doublon, car le
-    // modèle est parfois nommé autrement sur le site que sur la fiche.
-    for (const c of doublonsPossibles(fiche, existantes)) {
-      notesRapprochement.push(
-        `doublon possible avec l'annonce en ligne « ${c.slug} » (${c.titre}, année ${
-          c.specs["Année"] ?? "inconnue"
-        }, longueur ${c.specs["Longueur (m)"] ?? "inconnue"}) : le modèle diffère, aucun rapprochement automatique n'a été fait, à trancher avant de fusionner`
-      );
-    }
-  }
+  slugsVus.add(resume.slug);
+  resumes.push(resume);
 }
 
-const slug = existante?.slug ?? slugDeFiche(fiche);
-if (slug === "") {
-  console.error(
-    "fiche refusée : ni marque ni modèle exploitables, aucun slug possible"
-  );
-  process.exit(2);
-}
-
-// Photos : tri, arbitrage contre celles déjà en ligne, puis écriture.
-const tri = trierPhotos(document.images);
-const dossierPhotos = path.join(DIR_PHOTOS, slug);
-
-// Photos déjà publiées, avec leurs dimensions réelles : c'est ce qui
-// permet de ne jamais dégrader une galerie au re-dépôt d'une fiche.
-const enLigne: PhotoEnLigne[] = [];
-if (fs.existsSync(dossierPhotos)) {
-  for (const nom of fs.readdirSync(dossierPhotos).sort()) {
-    const rang = /^(\d+)\.jpg$/.exec(nom);
-    if (!rang) {
-      continue;
-    }
-    const octets = new Uint8Array(fs.readFileSync(path.join(dossierPhotos, nom)));
-    enLigne.push({
-      rang: Number(rang[1]),
-      nom,
-      dimensions: dimensionsJpeg(octets),
-    });
-  }
-}
-
-const arbitrage: ArbitragePhoto[] = arbitrerPhotos(enLigne, tri.retenues);
-const cheminsPhotos = arbitrage.map((d) => `/annonces/${slug}/${d.nom}`);
-if (!essai) {
-  const aEcrire = arbitrage.filter((d) => d.aEcrire !== undefined);
-  if (aEcrire.length > 0) {
-    fs.mkdirSync(dossierPhotos, { recursive: true });
-  }
-  for (const decision of aEcrire) {
-    fs.writeFileSync(
-      path.join(dossierPhotos, decision.nom),
-      (decision.aEcrire as (typeof tri.retenues)[number]).image.octets
-    );
-  }
-}
-
-const basseDef = tri.retenues.filter((p) => p.basseDef).length;
-const remplacees = arbitrage.filter((d) => d.decision === "remplacee").length;
-const nouvellesPhotos = arbitrage.filter((d) => d.decision === "nouvelle").length;
-const conservees = arbitrage.filter(
-  (d) => d.decision === "conservee" || d.decision === "gardee-hors-fiche"
-).length;
-const { annonce, notes } = annonceDepuisFiche(fiche, {
-  photos: cheminsPhotos,
-  photosBasseDef: basseDef,
-  date,
-  existante,
-});
-
-if (!essai) {
-  fs.mkdirSync(DIR_ANNONCES, { recursive: true });
-  fs.writeFileSync(
-    path.join(DIR_ANNONCES, `${slug}.json`),
-    `${JSON.stringify(annonce, null, 2)}\n`
-  );
-}
-
-// ---------- rapport ----------
-
-const lignes: string[] = [];
-const titre = existante ? "Mise à jour d'annonce" : "Nouvelle annonce";
-lignes.push(`# ${titre} : ${annonce.titre}`);
-lignes.push("");
-if (essai) {
-  lignes.push(
-    "Essai de lecture : aucune annonce ni photo n'a été écrite, seul ce rapport l'a été."
-  );
-  lignes.push("");
-}
-lignes.push(`- fiche source : \`${path.basename(chemin)}\`, ${fiche.pages} pages`);
-lignes.push(`- slug : \`${slug}\``);
-lignes.push(
-  existante
-    ? `- annonce existante remplacée, slug conservé pour préserver l'URL indexée et les redirections`
-    : "- bateau nouveau, slug construit sur marque, modèle et année"
-);
-lignes.push(`- date d'ingestion : ${date}`);
-lignes.push("");
-
-// Comparaison des photos : le canal PDF fournit des visuels de moindre
-// résolution que ceux du site historique. C'est une décision humaine, pas
-// une décision de script, donc elle est posée en tête du rapport.
-const alerteQualite: string[] = [...notesRapprochement];
-if (conservees > 0) {
-  alerteQualite.push(
-    `${conservees} photos déjà en ligne sont conservées telles quelles : la fiche n'offrait pas mieux, une photo n'est jamais remplacée par une version de moindre résolution`
-  );
-}
-if (basseDef > 0 && nouvellesPhotos + remplacees > 0) {
-  alerteQualite.push(
-    `${basseDef} des ${tri.retenues.length} photos de la fiche sont sous ${PIXELS_BASSE_DEF} pixels : la fiche PDF sert des visuels de moindre résolution que le site`
-  );
-}
-
-lignes.push("## À confirmer par un humain");
-lignes.push("");
-if (
-  fiche.a_confirmer.length === 0 &&
-  notes.length === 0 &&
-  alerteQualite.length === 0
-) {
-  lignes.push("Rien : tous les champs attendus ont été lus sur la fiche.");
-} else {
-  for (const item of alerteQualite) {
-    lignes.push(`- ${item}`);
-  }
-  for (const item of fiche.a_confirmer) {
-    lignes.push(`- ${item}`);
-  }
-  for (const note of notes) {
-    lignes.push(`- ${note}`);
-  }
-}
-lignes.push("");
-
-lignes.push("## Champs retenus");
-lignes.push("");
-lignes.push("| champ | valeur |");
-lignes.push("| --- | --- |");
-const champs: Array<[string, string]> = [
-  ["titre", annonce.titre],
-  ["marque", annonce.marque],
-  ["modèle", annonce.modele],
-  ["année", fiche.annee],
-  ["état", annonce.etat],
-  ["prix", annonce.prix === null ? "aucun, prix sur demande" : `${annonce.prix} ${annonce.devise}`],
-  ["longueur", fiche.longueur === null ? "a_confirmer" : `${fiche.longueur} m`],
-  ["largeur", fiche.largeur === null ? "a_confirmer" : `${fiche.largeur} m`],
-  ["catégorie", `${annonce.categorie} / ${annonce.sous_categorie}`],
-  ["emplacement", fiche.emplacement],
-  ["statut fiscal", fiche.statut_fiscal],
-  ["moteurs", String(fiche.moteurs.length)],
-  ["équipements", String(annonce.equipements.length)],
-  ["caractères de description", String(annonce.description.length)],
-];
-for (const [nom, valeur] of champs) {
-  lignes.push(`| ${nom} | ${valeur.replace(/\|/g, " ")} |`);
-}
-lignes.push("");
-
-lignes.push("## Moteurs");
-lignes.push("");
-if (fiche.moteurs.length === 0) {
-  lignes.push("Aucun bloc moteur sur la fiche.");
-} else {
-  for (const m of fiche.moteurs) {
-    lignes.push(
-      `- moteur ${m.numero} : ${m.intitule}, type ${m.type}, ${m.carburant}, puissance ${m.puissance}, heures ${m.heures}, entraînement ${m.entrainement}`
-    );
-  }
-}
-lignes.push("");
-
-lignes.push("## Photos");
-lignes.push("");
-lignes.push(
-  `- lues dans la fiche : ${tri.retenues.length}${
-    basseDef > 0
-      ? `, dont ${basseDef} sous ${PIXELS_BASSE_DEF} pixels, donc en basse définition`
-      : ""
-  }`
-);
-if (tri.rejetees.length === 0) {
-  lignes.push("- écartées de la fiche : aucune");
-} else {
-  lignes.push(`- écartées de la fiche : ${tri.rejetees.length}`);
-  for (const r of tri.rejetees) {
-    lignes.push(`  - rang ${r.image.rang}, page ${r.image.page} : ${r.motif}, ${r.detail}`);
-  }
-}
-lignes.push(
-  `- publiées après arbitrage : ${arbitrage.length} (${nouvellesPhotos} nouvelles, ${remplacees} remplacées, ${conservees} conservées)`
-);
-lignes.push("");
-lignes.push("### Décision photo par photo");
-lignes.push("");
-if (arbitrage.length === 0) {
-  lignes.push("Aucune photo, ni en ligne ni dans la fiche.");
-} else {
-  const LIBELLES_DECISION: Record<ArbitragePhoto["decision"], string> = {
-    nouvelle: "nouvelle",
-    remplacee: "remplacée",
-    conservee: "conservée",
-    "gardee-hors-fiche": "conservée",
-  };
-  lignes.push("| photo | décision | détail |");
-  lignes.push("| --- | --- | --- |");
-  for (const d of arbitrage) {
-    lignes.push(`| ${d.nom} | ${LIBELLES_DECISION[d.decision]} | ${d.detail} |`);
-  }
-  lignes.push("");
-  lignes.push(
-    "Une photo en ligne n'est jamais remplacée par une version de résolution inférieure, et une photo au-delà de ce que la fiche fournit est conservée."
-  );
-}
-lignes.push("");
-
-lignes.push("## Différences avec l'annonce en ligne");
-lignes.push("");
-for (const ligne of diffAnnonces(existante, annonce)) {
-  lignes.push(`- ${ligne}`);
-}
-lignes.push("");
-
-if (document.avertissements.length > 0 || fiche.avertissements.length > 0) {
-  lignes.push("## Avertissements de lecture");
-  lignes.push("");
-  for (const a of [...document.avertissements, ...fiche.avertissements]) {
-    lignes.push(`- ${a}`);
-  }
-  lignes.push("");
-}
-
-lignes.push("## Sections d'équipements");
-lignes.push("");
-for (const section of fiche.equipements) {
-  lignes.push(`- ${section.titre} : ${section.items.join(", ")}`);
-}
-lignes.push("");
-lignes.push(
-  "Le pied de page vendeur et l'avis de non-responsabilité de la fiche ne sont jamais importés."
-);
-lignes.push("");
-
-fs.mkdirSync(DIR_RAPPORTS, { recursive: true });
-const cheminRapport = path.join(
-  DIR_RAPPORTS,
-  essai ? `essai-ingestion-${slug}.md` : `ingestion-${slug}.md`
-);
-fs.writeFileSync(cheminRapport, `${lignes.join("\n")}`);
-
+// Le workflow lit ces paires : un seul bateau garde les clés au
+// singulier, un lot ajoute la liste des slugs et le compte.
+const premier = resumes[0] as Resume;
 console.log(`essai=${essai ? "oui" : "non"}`);
-console.log(`slug=${slug}`);
-console.log(`nouvelle=${existante ? "non" : "oui"}`);
-console.log(`photos=${tri.retenues.length}`);
-console.log(`photos_basse_def=${basseDef}`);
-console.log(`photos_ecartees=${tri.rejetees.length}`);
-console.log(`photos_publiees=${arbitrage.length}`);
-console.log(`photos_nouvelles=${nouvellesPhotos}`);
-console.log(`photos_remplacees=${remplacees}`);
-console.log(`photos_conservees=${conservees}`);
-console.log(
-  `a_confirmer=${fiche.a_confirmer.length + notes.length + alerteQualite.length}`
-);
-console.log(`rapport=${path.relative(racine, cheminRapport)}`);
+console.log(`bateaux=${resumes.length}`);
+console.log(`slugs=${resumes.map((r) => r.slug).join(",")}`);
+console.log(`slug=${premier.slug}`);
+console.log(`nouvelle=${premier.nouvelle ? "oui" : "non"}`);
+console.log(`rapport=${premier.rapport}`);
+console.log(`rapports=${resumes.map((r) => r.rapport).join(",")}`);
+console.log(`photos=${somme(resumes, (r) => r.photos)}`);
+console.log(`photos_basse_def=${somme(resumes, (r) => r.photosBasseDef)}`);
+console.log(`photos_ecartees=${somme(resumes, (r) => r.photosEcartees)}`);
+console.log(`photos_publiees=${somme(resumes, (r) => r.photosPubliees)}`);
+console.log(`photos_nouvelles=${somme(resumes, (r) => r.photosNouvelles)}`);
+console.log(`photos_remplacees=${somme(resumes, (r) => r.photosRemplacees)}`);
+console.log(`photos_conservees=${somme(resumes, (r) => r.photosConservees)}`);
+console.log(`a_confirmer=${somme(resumes, (r) => r.aConfirmer)}`);
+
+function somme(liste: Resume[], mesure: (r: Resume) => number): number {
+  return liste.reduce((total, r) => total + mesure(r), 0);
+}
+
+/**
+ * Traite un bateau du PDF : rapprochement, photos, annonce, rapport.
+ * Un PDF exporté par lots en porte plusieurs, chacun devient une annonce
+ * et un rapport distincts.
+ */
+function traiterFiche(
+  fiche: FichePdf,
+  document: DocumentPdf,
+  rang: number,
+  total: number
+): Resume {
+  let existante: Boat | undefined;
+  const notesRapprochement: string[] = [];
+  if (slugImpose !== null) {
+    existante = existantes.find((b) => b.slug === slugImpose);
+    if (!existante) {
+      console.error(
+        `annonce imposée « ${slugImpose} » introuvable : le slug est la fin de l'URL après /annonces/`
+      );
+      process.exit(3);
+    }
+    notesRapprochement.push(
+      `annonce cible imposée à la main : « ${slugImpose} »`
+    );
+  } else {
+    const rapprochement = rapprocher(fiche, existantes);
+    if (rapprochement.ambigues) {
+      // Deux annonces indiscernables : choisir écraserait peut-être la
+      // mauvaise. On rend la main avec les éléments de décision.
+      console.error(
+        `fiche refusée : ${rapprochement.ambigues.length} annonces en ligne portent la même marque et le même modèle, et l'année de la fiche (${fiche.annee}) ne tranche pas.`
+      );
+      for (const c of rapprochement.ambigues) {
+        console.error(
+          `  candidate : ${c.slug} (${c.etat}, ${
+            c.prix === null ? "prix sur demande" : `${c.prix} ${c.devise}`
+          }, année ${c.specs["Année"] ?? "inconnue"})`
+        );
+      }
+      console.error(
+        "Relancez en désignant l'annonce : --slug <slug>, ou distinguez les modèles dans BoatWizard."
+      );
+      process.exit(4);
+    }
+    existante = rapprochement.annonce;
+    if (rapprochement.note) {
+      notesRapprochement.push(rapprochement.note);
+    }
+    if (!existante) {
+      // Bateau tenu pour nouveau : reste à écarter le doublon, car le
+      // modèle est parfois nommé autrement sur le site que sur la fiche.
+      for (const c of doublonsPossibles(fiche, existantes)) {
+        notesRapprochement.push(
+          `doublon possible avec l'annonce en ligne « ${c.slug} » (${c.titre}, année ${
+            c.specs["Année"] ?? "inconnue"
+          }, longueur ${c.specs["Longueur (m)"] ?? "inconnue"}) : le modèle diffère, aucun rapprochement automatique n'a été fait, à trancher avant de fusionner`
+        );
+      }
+    }
+  }
+
+  const slug = existante?.slug ?? slugDeFiche(fiche);
+  if (slug === "") {
+    console.error(
+      "fiche refusée : ni marque ni modèle exploitables, aucun slug possible"
+    );
+    process.exit(2);
+  }
+
+  // Photos : tri, arbitrage contre celles déjà en ligne, puis écriture.
+  const tri = trierPhotos(document.images);
+  const dossierPhotos = path.join(DIR_PHOTOS, slug);
+
+  // Photos déjà publiées, avec leurs dimensions réelles : c'est ce qui
+  // permet de ne jamais dégrader une galerie au re-dépôt d'une fiche.
+  const enLigne: PhotoEnLigne[] = [];
+  if (fs.existsSync(dossierPhotos)) {
+    for (const nom of fs.readdirSync(dossierPhotos).sort()) {
+      const rang = /^(\d+)\.jpg$/.exec(nom);
+      if (!rang) {
+        continue;
+      }
+      const octets = new Uint8Array(fs.readFileSync(path.join(dossierPhotos, nom)));
+      enLigne.push({
+        rang: Number(rang[1]),
+        nom,
+        dimensions: dimensionsJpeg(octets),
+      });
+    }
+  }
+
+  const arbitrage: ArbitragePhoto[] = arbitrerPhotos(enLigne, tri.retenues);
+  const cheminsPhotos = arbitrage.map((d) => `/annonces/${slug}/${d.nom}`);
+  if (!essai) {
+    const aEcrire = arbitrage.filter((d) => d.aEcrire !== undefined);
+    if (aEcrire.length > 0) {
+      fs.mkdirSync(dossierPhotos, { recursive: true });
+    }
+    for (const decision of aEcrire) {
+      fs.writeFileSync(
+        path.join(dossierPhotos, decision.nom),
+        (decision.aEcrire as (typeof tri.retenues)[number]).image.octets
+      );
+    }
+  }
+
+  const basseDef = tri.retenues.filter((p) => p.basseDef).length;
+  const remplacees = arbitrage.filter((d) => d.decision === "remplacee").length;
+  const nouvellesPhotos = arbitrage.filter((d) => d.decision === "nouvelle").length;
+  const conservees = arbitrage.filter(
+    (d) => d.decision === "conservee" || d.decision === "gardee-hors-fiche"
+  ).length;
+  const { annonce, notes } = annonceDepuisFiche(fiche, {
+    photos: cheminsPhotos,
+    photosBasseDef: basseDef,
+    date,
+    existante,
+  });
+
+  if (!essai) {
+    fs.mkdirSync(DIR_ANNONCES, { recursive: true });
+    fs.writeFileSync(
+      path.join(DIR_ANNONCES, `${slug}.json`),
+      `${JSON.stringify(annonce, null, 2)}\n`
+    );
+  }
+
+  // ---------- rapport ----------
+
+  const lignes: string[] = [];
+  const titre = existante ? "Mise à jour d'annonce" : "Nouvelle annonce";
+  lignes.push(`# ${titre} : ${annonce.titre}`);
+  lignes.push("");
+  if (essai) {
+    lignes.push(
+      "Essai de lecture : aucune annonce ni photo n'a été écrite, seul ce rapport l'a été."
+    );
+    lignes.push("");
+  }
+  lignes.push(`- fiche source : \`${path.basename(cheminFiche)}\`, ${fiche.pages} pages`);
+  lignes.push(`- slug : \`${slug}\``);
+  lignes.push(
+    existante
+      ? `- annonce existante remplacée, slug conservé pour préserver l'URL indexée et les redirections`
+      : "- bateau nouveau, slug construit sur marque, modèle et année"
+  );
+  lignes.push(`- date d'ingestion : ${date}`);
+  if (total > 1) {
+    lignes.push(
+      `- bateau ${rang} sur ${total} trouvés dans le même PDF, lu sur ses seules pages : ni le texte ni les photos des autres bateaux n'entrent dans cette annonce`
+    );
+  }
+  lignes.push("");
+
+  // Comparaison des photos : le canal PDF fournit des visuels de moindre
+  // résolution que ceux du site historique. C'est une décision humaine, pas
+  // une décision de script, donc elle est posée en tête du rapport.
+  const alerteQualite: string[] = [...notesRapprochement];
+  if (conservees > 0) {
+    alerteQualite.push(
+      `${conservees} photos déjà en ligne sont conservées telles quelles : la fiche n'offrait pas mieux, une photo n'est jamais remplacée par une version de moindre résolution`
+    );
+  }
+  if (basseDef > 0 && nouvellesPhotos + remplacees > 0) {
+    alerteQualite.push(
+      `${basseDef} des ${tri.retenues.length} photos de la fiche sont sous ${PIXELS_BASSE_DEF} pixels : la fiche PDF sert des visuels de moindre résolution que le site`
+    );
+  }
+
+  lignes.push("## À confirmer par un humain");
+  lignes.push("");
+  if (
+    fiche.a_confirmer.length === 0 &&
+    notes.length === 0 &&
+    alerteQualite.length === 0
+  ) {
+    lignes.push("Rien : tous les champs attendus ont été lus sur la fiche.");
+  } else {
+    for (const item of alerteQualite) {
+      lignes.push(`- ${item}`);
+    }
+    for (const item of fiche.a_confirmer) {
+      lignes.push(`- ${item}`);
+    }
+    for (const note of notes) {
+      lignes.push(`- ${note}`);
+    }
+  }
+  lignes.push("");
+
+  lignes.push("## Champs retenus");
+  lignes.push("");
+  lignes.push("| champ | valeur |");
+  lignes.push("| --- | --- |");
+  const champs: Array<[string, string]> = [
+    ["titre", annonce.titre],
+    ["marque", annonce.marque],
+    ["modèle", annonce.modele],
+    ["année", fiche.annee],
+    ["état", annonce.etat],
+    ["prix", annonce.prix === null ? "aucun, prix sur demande" : `${annonce.prix} ${annonce.devise}`],
+    ["longueur", fiche.longueur === null ? "a_confirmer" : `${fiche.longueur} m`],
+    ["largeur", fiche.largeur === null ? "a_confirmer" : `${fiche.largeur} m`],
+    ["catégorie", `${annonce.categorie} / ${annonce.sous_categorie}`],
+    ["emplacement", fiche.emplacement],
+    ["statut fiscal", fiche.statut_fiscal],
+    ["moteurs", String(fiche.moteurs.length)],
+    ["équipements", String(annonce.equipements.length)],
+    ["caractères de description", String(annonce.description.length)],
+  ];
+  for (const [nom, valeur] of champs) {
+    lignes.push(`| ${nom} | ${valeur.replace(/\|/g, " ")} |`);
+  }
+  lignes.push("");
+
+  lignes.push("## Moteurs");
+  lignes.push("");
+  if (fiche.moteurs.length === 0) {
+    lignes.push("Aucun bloc moteur sur la fiche.");
+  } else {
+    for (const m of fiche.moteurs) {
+      lignes.push(
+        `- moteur ${m.numero} : ${m.intitule}, type ${m.type}, ${m.carburant}, puissance ${m.puissance}, heures ${m.heures}, entraînement ${m.entrainement}`
+      );
+    }
+  }
+  lignes.push("");
+
+  lignes.push("## Photos");
+  lignes.push("");
+  lignes.push(
+    `- lues dans la fiche : ${tri.retenues.length}${
+      basseDef > 0
+        ? `, dont ${basseDef} sous ${PIXELS_BASSE_DEF} pixels, donc en basse définition`
+        : ""
+    }`
+  );
+  if (tri.rejetees.length === 0) {
+    lignes.push("- écartées de la fiche : aucune");
+  } else {
+    lignes.push(`- écartées de la fiche : ${tri.rejetees.length}`);
+    for (const r of tri.rejetees) {
+      lignes.push(`  - rang ${r.image.rang}, page ${r.image.page} : ${r.motif}, ${r.detail}`);
+    }
+  }
+  lignes.push(
+    `- publiées après arbitrage : ${arbitrage.length} (${nouvellesPhotos} nouvelles, ${remplacees} remplacées, ${conservees} conservées)`
+  );
+  lignes.push("");
+  lignes.push("### Décision photo par photo");
+  lignes.push("");
+  if (arbitrage.length === 0) {
+    lignes.push("Aucune photo, ni en ligne ni dans la fiche.");
+  } else {
+    const LIBELLES_DECISION: Record<ArbitragePhoto["decision"], string> = {
+      nouvelle: "nouvelle",
+      remplacee: "remplacée",
+      conservee: "conservée",
+      "gardee-hors-fiche": "conservée",
+    };
+    lignes.push("| photo | décision | détail |");
+    lignes.push("| --- | --- | --- |");
+    for (const d of arbitrage) {
+      lignes.push(`| ${d.nom} | ${LIBELLES_DECISION[d.decision]} | ${d.detail} |`);
+    }
+    lignes.push("");
+    lignes.push(
+      "Une photo en ligne n'est jamais remplacée par une version de résolution inférieure, et une photo au-delà de ce que la fiche fournit est conservée."
+    );
+  }
+  lignes.push("");
+
+  lignes.push("## Différences avec l'annonce en ligne");
+  lignes.push("");
+  for (const ligne of diffAnnonces(existante, annonce)) {
+    lignes.push(`- ${ligne}`);
+  }
+  lignes.push("");
+
+  if (document.avertissements.length > 0 || fiche.avertissements.length > 0) {
+    lignes.push("## Avertissements de lecture");
+    lignes.push("");
+    for (const a of [...document.avertissements, ...fiche.avertissements]) {
+      lignes.push(`- ${a}`);
+    }
+    lignes.push("");
+  }
+
+  lignes.push("## Sections d'équipements");
+  lignes.push("");
+  for (const section of fiche.equipements) {
+    lignes.push(`- ${section.titre} : ${section.items.join(", ")}`);
+  }
+  lignes.push("");
+  lignes.push(
+    "Le pied de page vendeur et l'avis de non-responsabilité de la fiche ne sont jamais importés."
+  );
+  lignes.push("");
+
+  fs.mkdirSync(DIR_RAPPORTS, { recursive: true });
+  const cheminRapport = path.join(
+    DIR_RAPPORTS,
+    essai ? `essai-ingestion-${slug}.md` : `ingestion-${slug}.md`
+  );
+  fs.writeFileSync(cheminRapport, `${lignes.join("\n")}`);
+
+
+  return {
+    slug,
+    nouvelle: existante === undefined,
+    photos: tri.retenues.length,
+    photosBasseDef: basseDef,
+    photosEcartees: tri.rejetees.length,
+    photosPubliees: arbitrage.length,
+    photosNouvelles: nouvellesPhotos,
+    photosRemplacees: remplacees,
+    photosConservees: conservees,
+    aConfirmer: fiche.a_confirmer.length + notes.length + alerteQualite.length,
+    rapport: path.relative(racine, cheminRapport),
+  };
+}

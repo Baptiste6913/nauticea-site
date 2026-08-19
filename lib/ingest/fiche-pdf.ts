@@ -6,7 +6,13 @@
 // non-responsabilité ne sont jamais importés : ils appartiennent à la
 // fiche, pas au bateau.
 import type { DocumentPdf, Glyphe, Ligne } from "./pdf.ts";
-import { ECART_COLONNE, ECART_ESPACE, lirePdf, normaliserTexte } from "./pdf.ts";
+import {
+  ECART_COLONNE,
+  ECART_ESPACE,
+  documentSurPages,
+  lirePdf,
+  normaliserTexte,
+} from "./pdf.ts";
 import { DEVISES_AUTORISEES, deviseAutorisee } from "../format.ts";
 
 export const A_CONFIRMER = "a_confirmer";
@@ -553,12 +559,121 @@ const LIBELLES_MOTEUR: Record<string, ChampMoteurTexte> = {
 
 // ---------- point d'entrée ----------
 
-export function lireFichePdf(octets: Uint8Array): LectureFiche {
+/**
+ * Titre qui ouvre la grille du bateau. Un PDF exporté par lots enchaîne
+ * plusieurs bateaux dans un seul fichier : chaque fiche rouvre cette
+ * section, c'est donc elle qui marque les frontières.
+ */
+const OUVERTURE_DE_FICHE = "Détails sur le bateau";
+
+/**
+ * Pages où commence chaque fiche du document.
+ *
+ * La première fiche commence toujours à la première page du PDF, même si
+ * sa grille n'apparaît qu'ensuite : sinon on perdrait son en-tête, donc
+ * son prix. Les fiches suivantes commencent à la page qui rouvre la
+ * grille. Un PDF sans grille du tout rend une seule fiche, et c'est le
+ * parseur qui dira ensuite ce qui lui manque.
+ */
+export function pagesDeDebutDeFiche(doc: DocumentPdf): number[] {
+  const pages: number[] = [];
+  for (const l of doc.lignes) {
+    const ouverture =
+      l.corps >= CORPS_SECTION_MAJEURE &&
+      l.cellules.length === 1 &&
+      l.texte === OUVERTURE_DE_FICHE;
+    if (ouverture && !pages.includes(l.page)) {
+      pages.push(l.page);
+    }
+  }
+  pages.sort((a, b) => a - b);
+  const premiere = doc.lignes[0]?.page ?? 1;
+  if (pages.length === 0) {
+    return [premiere];
+  }
+  pages[0] = premiere;
+  return pages;
+}
+
+/**
+ * Découpe le document en autant de sous-documents que de fiches. Un PDF
+ * d'un seul bateau rend un seul sous-document, égal à l'original aux
+ * pages liminaires près.
+ */
+export function documentsDeFiches(doc: DocumentPdf): DocumentPdf[] {
+  const debuts = pagesDeDebutDeFiche(doc);
+  const derniere = doc.lignes.reduce((max, l) => Math.max(max, l.page), doc.pages);
+  return debuts.map((debut, i) => {
+    const suivante = debuts[i + 1];
+    return documentSurPages(doc, debut, suivante === undefined ? derniere : suivante - 1);
+  });
+}
+
+export type LectureFiches =
+  | { ok: true; fiches: FicheLue[] }
+  | { ok: false; erreur: string };
+
+export interface FicheLue {
+  fiche: FichePdf;
+  document: DocumentPdf;
+  /** Rang du bateau dans le PDF, à partir de 1. */
+  rang: number;
+  /** Nombre total de bateaux trouvés dans le PDF. */
+  total: number;
+}
+
+/**
+ * Lit toutes les fiches du PDF, dans l'ordre des pages.
+ *
+ * Une fiche illisible arrête tout : publier les autres en taisant celle
+ * qui manque ferait croire le dépôt complet.
+ */
+export function lireFichesPdf(octets: Uint8Array): LectureFiches {
   const lecture = lirePdf(octets);
   if (!lecture.ok) {
     return { ok: false, erreur: lecture.erreur };
   }
-  const doc = lecture.document;
+  const documents = documentsDeFiches(lecture.document);
+  const fiches: FicheLue[] = [];
+  for (const [i, doc] of documents.entries()) {
+    const lue = lireFicheDuDocument(doc);
+    if (!lue.ok) {
+      return documents.length === 1
+        ? { ok: false, erreur: lue.erreur }
+        : {
+            ok: false,
+            erreur: `bateau ${i + 1} sur ${documents.length} illisible : ${lue.erreur}`,
+          };
+    }
+    fiches.push({
+      fiche: lue.fiche,
+      document: lue.document,
+      rang: i + 1,
+      total: documents.length,
+    });
+  }
+  return { ok: true, fiches };
+}
+
+/**
+ * Lit le premier bateau du PDF. Un PDF qui en porte plusieurs n'est
+ * jamais lu d'un bloc : les photos du bateau suivant se retrouveraient
+ * dans la galerie du premier.
+ */
+export function lireFichePdf(octets: Uint8Array): LectureFiche {
+  const lecture = lireFichesPdf(octets);
+  if (!lecture.ok) {
+    return { ok: false, erreur: lecture.erreur };
+  }
+  const premiere = lecture.fiches[0] as FicheLue;
+  return { ok: true, fiche: premiere.fiche, document: premiere.document };
+}
+
+/**
+ * Lit un bateau depuis un document déjà découpé. Exposé pour les tests,
+ * qui vérifient le découpage sans repasser par un fichier.
+ */
+export function lireFicheDuDocument(doc: DocumentPdf): LectureFiche {
   const aConfirmer: string[] = [];
   const avertissements = [...doc.avertissements];
 
