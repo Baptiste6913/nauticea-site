@@ -115,14 +115,22 @@ jobs:
         if: steps.fiche.outputs.trouvee == 'oui'
         env:
           SLUG: ${{ steps.ingestion.outputs.slug }}
+          BATEAUX: ${{ steps.ingestion.outputs.bateaux }}
         run: |
           set -euo pipefail
-          branche="ingest/$SLUG"
+          # Un PDF exporté par lots porte plusieurs bateaux : une seule
+          # branche les rassemble alors, sans quoi il faudrait scinder le
+          # dépôt en autant de commits.
+          if [ "${BATEAUX:-1}" = "1" ]; then
+            branche="ingest/$SLUG"
+          else
+            branche="ingest/lot-$(date -u +%F)"
+          fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$branche"
           git add -A
-          git commit -m "Ingestion de la fiche $SLUG
+          git commit -m "Ingestion de la fiche déposée ($SLUG)
 
           Annonce écrite depuis la fiche PDF BoatWizard, photos rapatriées,
           rapport d'ingestion joint. Tests et harnais passés sur la branche.
@@ -148,15 +156,27 @@ jobs:
           SLUG: ${{ steps.ingestion.outputs.slug }}
           NOUVELLE: ${{ steps.ingestion.outputs.nouvelle }}
           RAPPORT: ${{ steps.ingestion.outputs.rapport }}
+          RAPPORTS: ${{ steps.ingestion.outputs.rapports }}
+          BATEAUX: ${{ steps.ingestion.outputs.bateaux }}
+          SLUGS: ${{ steps.ingestion.outputs.slugs }}
         run: |
           set -euo pipefail
-          titre="Annonce : $SLUG"
-          if [ "$NOUVELLE" = "oui" ]; then
+          if [ "${BATEAUX:-1}" != "1" ]; then
+            titre="$BATEAUX annonces : $SLUGS"
+          elif [ "$NOUVELLE" = "oui" ]; then
             titre="Nouvelle annonce : $SLUG"
           else
             titre="Mise à jour d'annonce : $SLUG"
           fi
-          corps="$(cat "$RAPPORT")"
+          # Le corps rassemble le rapport de chaque bateau : le relecteur
+          # voit tout ce que le dépôt a produit sans ouvrir le dépôt.
+          corps=""
+          IFS=',' read -ra chemins <<< "$RAPPORTS"
+          for rapport in "${chemins[@]}"; do
+            corps="$corps$(cat "$rapport")
+
+"
+          done
           corps="$corps
 
           ---

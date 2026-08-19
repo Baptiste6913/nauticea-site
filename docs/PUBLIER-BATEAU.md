@@ -43,6 +43,27 @@ message de refus dans l'onglet Actions.
 La fiche déposée est déplacée dans `ingest/archive/` par le dépôt : c'est
 la trace de ce qui a servi à écrire l'annonce.
 
+### Un PDF qui contient plusieurs bateaux
+
+BoatWizard sait exporter plusieurs fiches dans un seul fichier. Le dépôt
+le reconnaît : il découpe le PDF bateau par bateau, écrit une annonce et
+un rapport par bateau, et ouvre une seule demande de fusion qui les
+rassemble, nommée `ingest/lot-<date>`.
+
+Chaque bateau n'est lu que sur ses propres pages. Ni son texte ni ses
+photos ne peuvent partir dans l'annonce du voisin, et le rapport de
+chaque bateau rappelle son rang dans le fichier.
+
+Deux réserves, apprises sur un envoi réel du 19/08 :
+
+- Si le même bateau figure deux fois dans le PDF, le dépôt refuse tout
+  plutôt que d'écraser la première annonce par la seconde.
+- Si vous envoyez ensuite la fiche dédiée d'un bateau déjà publié par un
+  lot, c'est la dernière déposée qui fait foi. Vérifiez les écarts au
+  bloc « Différences avec l'annonce en ligne » : deux exports du même
+  bateau à des dates différentes peuvent ne pas dire la même chose, par
+  exemple sur les heures moteur.
+
 ## Modifier un bateau déjà en ligne
 
 Corrigez d'abord dans BoatWizard, régénérez la fiche PDF, puis déposez-la

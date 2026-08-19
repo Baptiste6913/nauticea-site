@@ -888,3 +888,27 @@ export function lirePdf(octets: Uint8Array): LecturePdf {
 export function texteDuDocument(doc: DocumentPdf): string[] {
   return doc.lignes.map((l) => l.texte);
 }
+
+/**
+ * Sous-document limité à une plage de pages.
+ *
+ * Sert au découpage d'un PDF qui porte plusieurs fiches : chaque bateau
+ * est lu sur ses propres pages, sans jamais voir le texte ni les photos
+ * du suivant. Les numéros de page et les rangs d'image restent ceux du
+ * PDF d'origine, car le rapport d'ingestion les cite et doit rester
+ * vérifiable sur le fichier reçu.
+ */
+export function documentSurPages(
+  doc: DocumentPdf,
+  premiere: number,
+  derniere: number
+): DocumentPdf {
+  const dans = (page: number) => page >= premiere && page <= derniere;
+  return {
+    pages: derniere - premiere + 1,
+    lignes: doc.lignes.filter((l) => dans(l.page)),
+    glyphes: doc.glyphes.filter((g) => dans(g.page)),
+    images: doc.images.filter((i) => dans(i.page)),
+    avertissements: doc.avertissements,
+  };
+}
